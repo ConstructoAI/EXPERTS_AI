@@ -1284,10 +1284,10 @@ with st.sidebar:
     
     # Clé API Claude (sécurisée)
     api_key_input = st.text_input(
-        "Clé API Anthropic Claude",
+        "Clé API",
         type="password",
         value=st.session_state.user_api_key,
-        help="Entrez votre clé API Anthropic Claude pour utiliser l'assistant IA",
+        help="Entrez votre clé API pour utiliser l'assistant IA",
         placeholder="sk-ant-api03-..."
     )
     
@@ -1307,7 +1307,6 @@ with st.sidebar:
             st.warning("⚠️ Clé API fournie, initialisation...")
     else:
         st.error("❌ Clé API requise pour utiliser l'assistant")
-        st.info("💡 Obtenez votre clé API sur https://console.anthropic.com")
     
     st.divider()
         
@@ -2934,7 +2933,7 @@ if st.session_state.user_api_key and 'expert_advisor' in st.session_state:
         st.rerun()
 elif not st.session_state.user_api_key:
     # Message d'information si pas de clé API
-    st.info("🔑 **Clé API Anthropic Claude requise**\n\nVeuillez saisir votre clé API dans la barre latérale pour commencer à utiliser EXPERTS IA.")
+    st.info("🔑 **Clé API requise**\n\nVeuillez saisir votre clé API dans la barre latérale pour commencer à utiliser EXPERTS IA.")
     st.markdown("""
     **Pour obtenir une clé API, contactez Sylvain Leduc :**  
     📧 [sylvainleduc2000@gmail.com](mailto:sylvainleduc2000@gmail.com)  
