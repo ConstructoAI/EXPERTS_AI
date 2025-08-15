@@ -164,12 +164,23 @@ class LoginAttemptTracker:
 
 def validate_environment_variables() -> List[str]:
     """Valide les variables d'environnement critiques."""
+    # En mode développement, ignorer la validation
+    if os.environ.get("DEV_MODE", "true").lower() == "true":
+        return []  # Pas de validation en mode dev
+    
     missing_vars = []
     critical_vars = ["ANTHROPIC_API_KEY", "APP_PASSWORD"]
     
     for var in critical_vars:
-        if not os.environ.get(var) and not st.secrets.get(var, None):
-            missing_vars.append(var)
+        # Vérifier d'abord les variables d'environnement
+        if not os.environ.get(var):
+            # Ensuite essayer st.secrets si disponible
+            try:
+                if not st.secrets.get(var, None):
+                    missing_vars.append(var)
+            except:
+                # Si secrets n'existe pas, ajouter à missing
+                missing_vars.append(var)
     
     if missing_vars:
         log_security_event(

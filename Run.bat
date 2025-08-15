@@ -6,17 +6,17 @@ echo.
 
 echo Recherche de Python...
 
+REM Essayer py launcher (priorité car il fonctionne)
+py --version 2>nul
+if %errorlevel% equ 0 (
+    set "PYTHON_CMD=py"
+    goto :found_python
+)
+
 REM Essayer python dans le PATH
 python --version 2>nul
 if %errorlevel% equ 0 (
     set "PYTHON_CMD=python"
-    goto :found_python
-)
-
-REM Essayer py launcher
-py --version 2>nul
-if %errorlevel% equ 0 (
-    set "PYTHON_CMD=py"
     goto :found_python
 )
 
@@ -53,12 +53,15 @@ echo Installation des dependances...
 %PYTHON_CMD% -m pip install -r requirements.txt
 
 echo.
-echo Demarrage de Constructo AI...
+echo Demarrage de EXPERTS IA...
 echo Interface accessible sur: http://localhost:8501
 echo Fermez cette fenetre pour arreter l'application
 echo.
 
-%PYTHON_CMD% -m streamlit run app.py
+REM Attendre 3 secondes puis ouvrir le navigateur automatiquement
+start "" timeout /t 3 /nobreak ^& start http://localhost:8501
+
+%PYTHON_CMD% -m streamlit run app.py --server.headless=false
 
 echo.
 pause

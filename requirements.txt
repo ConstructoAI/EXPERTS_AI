@@ -1,7 +1,7 @@
 # requirements.txt - Version étendue multi-formats EXPERTS IA
 
 # Web framework
-streamlit>=1.48.0
+streamlit>=1.46.0
 
 # Claude API client (Expert principal)
 anthropic>=0.51.0
