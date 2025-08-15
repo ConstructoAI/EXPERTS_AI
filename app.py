@@ -11,9 +11,13 @@ from dotenv import load_dotenv
 try:
     from expert_logic import ExpertAdvisor, ExpertProfileManager
     from conversation_manager import ConversationManager
+    from security_utils import (
+        log_security_event, LoginAttemptTracker, 
+        validate_environment_variables, sanitize_input, check_rate_limiting
+    )
 except ImportError as e:
     st.error(f"Erreur d'importation des modules locaux: {e}")
-    st.error("Assurez-vous que les fichiers 'expert_logic.py' et 'conversation_manager.py' existent dans le même dossier.")
+    st.error("Assurez-vous que tous les fichiers requis existent dans le même dossier.")
     st.stop()
 
 # Modules supprimés : project_manager, inventory_manager, database_integration, knowledge_base_ui
@@ -1194,6 +1198,208 @@ if not ANTHROPIC_API_KEY:
     except Exception:
         pass
 
+# --- SYSTÈME D'AUTHENTIFICATION SÉCURISÉ ---
+@st.cache_data(ttl=300)  # Cache pendant 5 minutes
+def get_login_tracker():
+    """Obtient le tracker de connexions (cache pour performance)."""
+    return LoginAttemptTracker()
+
+def check_authentication():
+    """Vérifie l'authentification de l'utilisateur avec sécurité renforcée."""
+    # Valider les variables d'environnement critiques
+    missing_vars = validate_environment_variables()
+    if missing_vars:
+        st.error("❌ Configuration manquante!")
+        st.error(f"Variables requises: {', '.join(missing_vars)}")
+        st.info("💡 Configurez les variables d'environnement ou secrets Streamlit")
+        log_security_event("MISSING_CONFIG", f"Variables: {missing_vars}", "CRITICAL")
+        st.stop()
+    
+    if 'authenticated' not in st.session_state:
+        st.session_state.authenticated = False
+    
+    if not st.session_state.authenticated:
+        login_tracker = get_login_tracker()
+        
+        # Vérifier si l'utilisateur est bloqué
+        if login_tracker.is_locked_out():
+            remaining_time = login_tracker.get_lockout_time_remaining()
+            if remaining_time:
+                minutes_remaining = int(remaining_time.total_seconds() // 60)
+                st.error(f"🔒 **Accès temporairement bloqué**")
+                st.error(f"Trop de tentatives de connexion échouées.")
+                st.error(f"Réessayez dans {minutes_remaining} minute(s).")
+                st.info("💡 Contactez l'administrateur si vous avez oublié le mot de passe")
+                st.stop()
+        # Styles pour la page de connexion
+        st.markdown("""
+        <style>
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            margin: 2rem 0;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .login-header {
+            color: white;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .login-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .login-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+        .login-form {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        .stTextInput > div > div > input {
+            font-size: 1.1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 2px solid #e1e5e9;
+            transition: all 0.3s ease;
+        }
+        .stTextInput > div > div > input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        div.stButton > button {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            border: none;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        div.stButton > button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .security-notice {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            color: white;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🏗️ EXPERTS IA</h1>
+                <p>Plateforme Sécurisée d'Experts en Construction</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Interface de connexion dans un conteneur centré
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            with st.container():
+                st.markdown('<div class="login-form">', unsafe_allow_html=True)
+                
+                st.markdown("### 🔐 Authentification Requise")
+                st.markdown("Veuillez saisir le mot de passe d'accès pour utiliser la plateforme.")
+                
+                password = st.text_input(
+                    "Mot de passe", 
+                    type="password",
+                    placeholder="Entrez votre mot de passe...",
+                    help="Contactez l'administrateur si vous n'avez pas le mot de passe"
+                )
+                
+                # Afficher les tentatives restantes
+                remaining = login_tracker.get_remaining_attempts()
+                if remaining < 5:
+                    if remaining > 0:
+                        st.warning(f"⚠️ {remaining} tentative(s) restante(s) avant blocage")
+                    else:
+                        st.error("❌ Plus de tentatives autorisées")
+                
+                if st.button("🚀 Se Connecter", key="login_button"):
+                    # Vérifier la limite de taux
+                    if not check_rate_limiting():
+                        st.error("❌ Trop de requêtes. Attendez un moment.")
+                        st.stop()
+                    
+                    # Sanitiser l'entrée
+                    password = sanitize_input(password)
+                    
+                    # Obtenir le mot de passe depuis les variables d'environnement
+                    app_password = os.environ.get("APP_PASSWORD")
+                    if not app_password:
+                        try:
+                            app_password = st.secrets.get("APP_PASSWORD")
+                        except Exception:
+                            pass
+                    
+                    if not app_password:
+                        st.error("❌ Configuration manquante: APP_PASSWORD non défini")
+                        st.info("💡 L'administrateur doit configurer la variable APP_PASSWORD")
+                        log_security_event("MISSING_APP_PASSWORD", "Configuration critique manquante", "CRITICAL")
+                        st.stop()
+                    
+                    if password == app_password:
+                        st.session_state.authenticated = True
+                        login_tracker.record_successful_login()
+                        st.success("✅ Authentification réussie ! Redirection...")
+                        log_security_event("SUCCESSFUL_AUTH", "Utilisateur connecté", "INFO")
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        login_tracker.record_failed_attempt()
+                        remaining_after = login_tracker.get_remaining_attempts()
+                        
+                        if remaining_after > 0:
+                            st.error("❌ Mot de passe incorrect")
+                            st.warning(f"🔒 {remaining_after} tentative(s) restante(s)")
+                        else:
+                            st.error("❌ Compte temporairement bloqué")
+                            st.error("Trop de tentatives échouées")
+                            
+                        log_security_event("FAILED_AUTH", f"Tentative échouée, {remaining_after} restantes", "WARNING")
+                
+                st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Notice de sécurité
+        st.markdown("""
+        <div class="security-notice">
+            🛡️ <strong>Sécurité:</strong> Cette application utilise une authentification sécurisée.<br>
+            Toutes les connexions sont surveillées et les tentatives d'accès non autorisé sont bloquées.
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.stop()
+
+# Appliquer l'authentification
+check_authentication()
+
 # --- Initialize Logic Classes & Conversation Manager ---
 if 'profile_manager' not in st.session_state:
     try:
@@ -1287,6 +1493,52 @@ with st.sidebar:
     }
     </style>
     """, unsafe_allow_html=True)
+
+    # --- Bouton de déconnexion ---
+    st.markdown("""
+    <style>
+    div.stButton > button:has(span:contains("Se Déconnecter")) {
+        background: linear-gradient(90deg, #EF4444 0%, #DC2626 100%) !important;
+        color: white !important;
+        font-weight: 600 !important;
+        padding: 8px 12px !important;
+        font-size: 0.9rem !important;
+        border-radius: 6px !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
+    }
+    div.stButton > button:has(span:contains("Se Déconnecter")):hover {
+        background: linear-gradient(90deg, #DC2626 0%, #B91C1C 100%) !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3) !important;
+    }
+    div.stButton > button:has(span:contains("Se Déconnecter"))::before {
+        content: "🚪 " !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    col1, col2 = st.columns([3, 1])
+    with col2:
+        if st.button("Se Déconnecter", key="logout_button"):
+            # Effacer toutes les données de session sensibles
+            if 'authenticated' in st.session_state:
+                del st.session_state.authenticated
+            if 'messages' in st.session_state:
+                del st.session_state.messages
+            if 'current_conversation_id' in st.session_state:
+                del st.session_state.current_conversation_id
+            # Effacer toute la session
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.success("🔒 Déconnexion réussie")
+            time.sleep(1)
+            st.rerun()
+    
+    with col1:
+        pass  # Espace vide pour aligner le bouton à droite
+    
+    st.markdown('<hr style="margin: 1rem 0; border-top: 1px solid var(--border-color);">', unsafe_allow_html=True)
 
     if st.button("Nouvelle Consultation", key="new_consult_button_top", use_container_width=True):
         save_current_conversation()

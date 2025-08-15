@@ -153,14 +153,84 @@ class ExpertAdvisor:
     def get_supported_filetypes_flat(self):
         return [ext.lstrip('.') for ext in self.supported_formats]
 
+    def _validate_file_security(self, uploaded_file):
+        """Valide la sécurité d'un fichier uploadé."""
+        file_bytes = uploaded_file.getvalue()
+        filename = uploaded_file.name
+        file_ext = os.path.splitext(filename)[1].lower()
+        
+        # 1. Vérification de la taille (limite 50MB)
+        max_size = 50 * 1024 * 1024  # 50MB
+        if len(file_bytes) > max_size:
+            return f"❌ Fichier trop volumineux: {filename}. Taille maximum: 50MB"
+        
+        # 2. Vérification des caractères dangereux dans le nom
+        dangerous_chars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '\x00']
+        if any(char in filename for char in dangerous_chars):
+            return f"❌ Nom de fichier non sécurisé: {filename}. Caractères interdits détectés."
+        
+        # 3. Vérification des signatures de fichiers (magic numbers)
+        magic_signatures = {
+            '.pdf': [b'%PDF'],
+            '.png': [b'\x89PNG\r\n\x1a\n'],
+            '.jpg': [b'\xff\xd8\xff\xe0', b'\xff\xd8\xff\xe1', b'\xff\xd8\xff\xdb'],
+            '.jpeg': [b'\xff\xd8\xff\xe0', b'\xff\xd8\xff\xe1', b'\xff\xd8\xff\xdb'],
+            '.gif': [b'GIF87a', b'GIF89a'],
+            '.bmp': [b'BM'],
+            '.webp': [b'RIFF'],
+            '.docx': [b'PK\x03\x04'],  # ZIP format
+            '.xlsx': [b'PK\x03\x04'],  # ZIP format
+        }
+        
+        if file_ext in magic_signatures:
+            file_start = file_bytes[:20]  # Premiers 20 bytes
+            valid_signature = False
+            for signature in magic_signatures[file_ext]:
+                if file_start.startswith(signature):
+                    valid_signature = True
+                    break
+            
+            if not valid_signature:
+                return f"❌ Signature de fichier invalide: {filename}. Le fichier pourrait être corrompu ou malveillant."
+        
+        # 4. Vérifications spécifiques pour les fichiers texte
+        if file_ext in ['.txt', '.csv', '.json', '.xml', '.yaml', '.yml', '.py', '.js', '.html', '.htm', '.css']:
+            try:
+                # Vérifier l'encodage et détecter les contenus suspects
+                text_content = file_bytes.decode('utf-8', errors='ignore')
+                
+                # Détecter des patterns suspects
+                suspicious_patterns = [
+                    'eval(', 'exec(', '<script', '<?php', '<%', 
+                    'DROP TABLE', 'DELETE FROM', 'UPDATE SET',
+                    'javascript:', 'vbscript:', 'data:',
+                    '__import__', 'subprocess.', 'os.system'
+                ]
+                
+                text_lower = text_content.lower()
+                for pattern in suspicious_patterns:
+                    if pattern.lower() in text_lower:
+                        print(f"SÉCURITÉ: Pattern suspect détecté dans {filename}: {pattern}")
+                        # Log mais ne bloque pas (pourrait être légitime dans un contexte de construction)
+            except:
+                pass  # Erreur de décodage, mais on continue
+        
+        return None  # Aucune erreur détectée
+
     def read_file(self, uploaded_file):
         file_ext = os.path.splitext(uploaded_file.name)[1].lower()
         if file_ext not in self.supported_formats:
             return f"Format de fichier non supporté: {uploaded_file.name}. Formats acceptés: {', '.join(self.supported_formats)}"
         
+        # 🔒 VALIDATION DE SÉCURITÉ
+        security_error = self._validate_file_security(uploaded_file)
+        if security_error:
+            return security_error
+        
         try:
             file_bytes = uploaded_file.getvalue()
             file_stream = io.BytesIO(file_bytes)
+            print(f"🔒 SÉCURITÉ: Fichier validé - {uploaded_file.name} ({len(file_bytes)} bytes)")
             
             # Documents PDF
             if file_ext == '.pdf':
