@@ -1370,7 +1370,7 @@ with st.sidebar:
         else:
             st.warning("Aucun profil expert trouvé.")
     else:
-        st.error("Module Expert non initialisé.")
+        st.info("Veuillez configurer votre clé API pour accéder aux profils experts.")
 
     # --- Analyse Fichiers ---
     st.markdown('<div class="sidebar-subheader">📄 ANALYSE FICHIERS</div>', unsafe_allow_html=True)
@@ -1731,10 +1731,9 @@ with main_container:
         st.markdown("""
         <div class="main-header">
             <h1>🏗️ Assistant EXPERTS IA</h1>
-            <p>Erreur: Module expert non initialisé</p>
+            <p>Configuration de votre assistant en cours...</p>
         </div>
         """, unsafe_allow_html=True)
-        st.error("Erreur: Module expert non initialisé.")
 
     # Affichage du chat
     if not st.session_state.messages and 'expert_advisor' in st.session_state:
