@@ -2936,14 +2936,7 @@ elif not st.session_state.user_api_key:
     # Message d'information si pas de clé API
     st.info("🔑 **Clé API Anthropic Claude requise**\n\nVeuillez saisir votre clé API dans la barre latérale pour commencer à utiliser EXPERTS IA.")
     st.markdown("""
-    ### Comment obtenir votre clé API ?
-    1. Rendez-vous sur [console.anthropic.com](https://console.anthropic.com)
-    2. Créez un compte ou connectez-vous
-    3. Allez dans **API Keys** 
-    4. Créez une nouvelle clé API
-    5. Copiez-collez la clé dans le champ de la barre latérale
-    
-    **Besoin d'aide ?** Contactez Sylvain Leduc :  
+    **Pour obtenir une clé API, contactez Sylvain Leduc :**  
     📧 [sylvainleduc2000@gmail.com](mailto:sylvainleduc2000@gmail.com)  
     📱 (514) 820-1972
     """)
