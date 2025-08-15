@@ -2942,6 +2942,10 @@ elif not st.session_state.user_api_key:
     3. Allez dans **API Keys** 
     4. Créez une nouvelle clé API
     5. Copiez-collez la clé dans le champ de la barre latérale
+    
+    **Besoin d'aide ?** Contactez Sylvain Leduc :  
+    📧 [sylvainleduc2000@gmail.com](mailto:sylvainleduc2000@gmail.com)  
+    📱 (514) 820-1972
     """)
 else:
     st.warning("⚠️ Initialisation de l'assistant IA en cours...")
