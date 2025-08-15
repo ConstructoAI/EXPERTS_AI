@@ -1663,33 +1663,32 @@ with st.sidebar:
     </style>
     """, unsafe_allow_html=True)
 
-    # --- Bouton de déconnexion ---
-    st.markdown("""
-    <style>
-    div.stButton > button:has(span:contains("Se Déconnecter")) {
-        background: linear-gradient(90deg, #EF4444 0%, #DC2626 100%) !important;
-        color: white !important;
-        font-weight: 600 !important;
-        padding: 8px 12px !important;
-        font-size: 0.9rem !important;
-        border-radius: 6px !important;
-        border: none !important;
-        transition: all 0.3s ease !important;
-    }
-    div.stButton > button:has(span:contains("Se Déconnecter")):hover {
-        background: linear-gradient(90deg, #DC2626 0%, #B91C1C 100%) !important;
-        transform: translateY(-1px) !important;
-        box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3) !important;
-    }
-    div.stButton > button:has(span:contains("Se Déconnecter"))::before {
-        content: "🚪 " !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    col1, col2 = st.columns([3, 1])
-    with col2:
-        if st.button("Se Déconnecter", key="logout_button"):
+    # --- Bouton de déconnexion (uniquement si authentifié) ---
+    # En production (Render), ce bouton apparaîtra après connexion
+    if st.session_state.get('authenticated', False):
+        st.markdown("""
+        <style>
+        div.stButton > button:has(span:contains("🚪 Déconnexion")) {
+            background: linear-gradient(90deg, #EF4444 0%, #DC2626 100%) !important;
+            color: white !important;
+            font-weight: 600 !important;
+            padding: 10px 15px !important;
+            font-size: 0.95rem !important;
+            border-radius: 8px !important;
+            border: none !important;
+            transition: all 0.3s ease !important;
+            width: 100% !important;
+            margin-bottom: 1rem !important;
+        }
+        div.stButton > button:has(span:contains("🚪 Déconnexion")):hover {
+            background: linear-gradient(90deg, #DC2626 0%, #B91C1C 100%) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        if st.button("🚪 Déconnexion", key="logout_button", use_container_width=True):
             # Effacer toutes les données de session sensibles
             if 'authenticated' in st.session_state:
                 del st.session_state.authenticated
@@ -1703,10 +1702,42 @@ with st.sidebar:
             st.success("🔒 Déconnexion réussie")
             time.sleep(1)
             st.rerun()
+        
+        st.markdown('<hr style="margin: 0.5rem 0; border-top: 1px solid var(--border-color);">', unsafe_allow_html=True)
     
-    with col1:
-        pass  # Espace vide pour aligner le bouton à droite
+    # --- Indicateur de mode (pour debug) ---
+    dev_mode = os.environ.get("DEV_MODE", "true").lower() == "true"
+    if dev_mode:
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%); 
+                    color: white; 
+                    padding: 8px 12px; 
+                    border-radius: 8px; 
+                    text-align: center; 
+                    font-size: 0.85rem; 
+                    margin-bottom: 1rem;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            🔓 <strong>Mode Développement</strong><br>
+            <span style="font-size: 0.75rem; opacity: 0.9;">Authentification désactivée</span>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        if st.session_state.get('authenticated', False):
+            st.markdown("""
+            <div style="background: linear-gradient(135deg, #3B82F6 0%, #1F2937 100%); 
+                        color: white; 
+                        padding: 8px 12px; 
+                        border-radius: 8px; 
+                        text-align: center; 
+                        font-size: 0.85rem; 
+                        margin-bottom: 1rem;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                🔒 <strong>Mode Production</strong><br>
+                <span style="font-size: 0.75rem; opacity: 0.9;">Connecté et sécurisé</span>
+            </div>
+            """, unsafe_allow_html=True)
     
+    # Séparateur avant le bouton Nouvelle Consultation
     st.markdown('<hr style="margin: 1rem 0; border-top: 1px solid var(--border-color);">', unsafe_allow_html=True)
 
     if st.button("Nouvelle Consultation", key="new_consult_button_top", use_container_width=True):
