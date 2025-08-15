@@ -1,0 +1,56 @@
+# requirements.txt - Version étendue multi-formats EXPERTS IA
+
+# Web framework
+streamlit>=1.46.0
+
+# Claude API client (Expert principal)
+anthropic>=0.51.0
+
+# === DOCUMENTS ===
+# PDF reading
+PyPDF2>=3.0.0
+
+# Word documents
+python-docx>=1.0.0
+docx2txt>=0.8  # Pour DOC legacy
+
+# Excel files
+openpyxl>=3.1.0  # XLSX/XLS
+xlrd>=2.0.1  # XLS legacy
+
+# RTF documents
+striprtf>=0.0.26
+
+# === IMAGES ===
+# Image processing étendu
+Pillow>=10.0.0
+
+# === AUDIO ===
+# Transcription audio
+speechrecognition>=3.10.0
+pydub>=0.25.1  # Manipulation audio
+librosa>=0.10.0  # Analyse audio avancée
+
+# === CODE & DATA ===
+# Syntax highlighting pour code
+pygments>=2.16.0
+
+# YAML parsing
+pyyaml>=6.0
+
+# === UTILITIES ===
+# Variables d'environnement
+python-dotenv>=1.0.0
+
+# Markdown to HTML
+Markdown>=3.3.0
+
+# Détection encodage fichiers
+chardet>=5.2.0
+
+# Extraction métadonnées
+python-magic>=0.4.27  # Type MIME detection
+
+# === OPTIONNEL (Performance) ===
+# Cache pour réponses
+diskcache>=5.6.0
