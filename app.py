@@ -4,7 +4,6 @@ import os
 import io
 import html
 import markdown
-import time
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -12,13 +11,9 @@ from dotenv import load_dotenv
 try:
     from expert_logic import ExpertAdvisor, ExpertProfileManager
     from conversation_manager import ConversationManager
-    from security_utils import (
-        log_security_event, LoginAttemptTracker, 
-        validate_environment_variables, sanitize_input, check_rate_limiting
-    )
 except ImportError as e:
     st.error(f"Erreur d'importation des modules locaux: {e}")
-    st.error("Assurez-vous que tous les fichiers requis existent dans le même dossier.")
+    st.error("Assurez-vous que les fichiers 'expert_logic.py' et 'conversation_manager.py' existent dans le même dossier.")
     st.stop()
 
 # Modules supprimés : project_manager, inventory_manager, database_integration, knowledge_base_ui
@@ -1191,383 +1186,22 @@ adapt_layout_for_mobile(is_mobile)
 # --- Load API Keys ---
 load_dotenv() # Pour le dev local si .env existe
 
-# Obtenir la clé API depuis les variables d'environnement ou secrets
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
-if not ANTHROPIC_API_KEY:
-    try:
-        ANTHROPIC_API_KEY = st.secrets.get("ANTHROPIC_API_KEY")
-    except Exception:
-        pass
-
-# --- SYSTÈME D'AUTHENTIFICATION SÉCURISÉ ---
-@st.cache_data(ttl=300)  # Cache pendant 5 minutes
-def get_login_tracker():
-    """Obtient le tracker de connexions (cache pour performance)."""
-    return LoginAttemptTracker()
-
-def check_authentication():
-    """Vérifie l'authentification de l'utilisateur avec sécurité renforcée."""
-    # Valider les variables d'environnement critiques
-    missing_vars = validate_environment_variables()
-    if missing_vars:
-        st.error("❌ Configuration manquante!")
-        st.error(f"Variables requises: {', '.join(missing_vars)}")
-        st.info("💡 Configurez les variables d'environnement ou secrets Streamlit")
-        log_security_event("MISSING_CONFIG", f"Variables: {missing_vars}", "CRITICAL")
-        st.stop()
+# Interface pour saisie de clé API utilisateur (comme dans TAKE AI)
+def get_api_key():
+    """Obtient la clé API depuis l'interface utilisateur ou les variables d'environnement"""
+    # Valeur par défaut depuis l'environnement
+    default_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not default_key:
+        try:
+            default_key = st.secrets.get("ANTHROPIC_API_KEY", "")
+        except Exception:
+            pass
     
-    if 'authenticated' not in st.session_state:
-        st.session_state.authenticated = False
-    
-    if not st.session_state.authenticated:
-        login_tracker = get_login_tracker()
-        
-        # Vérifier si l'utilisateur est bloqué
-        if login_tracker.is_locked_out():
-            remaining_time = login_tracker.get_lockout_time_remaining()
-            if remaining_time:
-                minutes_remaining = int(remaining_time.total_seconds() // 60)
-                st.error(f"🔒 **Accès temporairement bloqué**")
-                st.error(f"Trop de tentatives de connexion échouées.")
-                st.error(f"Réessayez dans {minutes_remaining} minute(s).")
-                st.info("💡 Contactez l'administrateur si vous avez oublié le mot de passe")
-                st.stop()
-        # Styles pour la page de connexion (utilisant les variables CSS de style.css)
-        st.markdown("""
-        <style>
-        /* Importer les variables CSS de l'application */
-        :root {
-            --primary-color: #3B82F6;
-            --primary-color-darker: #2563EB;
-            --primary-color-darkest: #1D4ED8;
-            --button-color: #1F2937;
-            --button-color-dark: #111827;
-            --background-color: #FAFBFF;
-            --secondary-background-color: #F8FAFF;
-            --content-background: #FFFFFF;
-            --text-color: #1F2937;
-            --text-color-light: #6B7280;
-            --border-color: #E5E7EB;
-            --border-color-blue: #DBEAFE;
-            --border-radius-lg: 0.75rem;
-            --border-radius-xl: 1rem;
-            --box-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05);
-            --box-shadow-blue: 0 4px 12px rgba(59, 130, 246, 0.15);
-            --primary-gradient: linear-gradient(135deg, #3B82F6 0%, #1F2937 100%);
-            --card-gradient: linear-gradient(135deg, #F5F8FF 0%, #FFFFFF 100%);
-            --button-gradient: linear-gradient(90deg, #3B82F6 0%, #1F2937 100%);
-            --button-gradient-hover: linear-gradient(90deg, #2563EB 0%, #111827 100%);
-        }
+    return default_key
 
-        /* Animation fadeIn de l'application */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Container principal avec le style EXPERTS IA */
-        .login-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 70vh;
-            background: var(--primary-gradient);
-            border-radius: var(--border-radius-xl);
-            margin: 2rem 0;
-            padding: 3rem 2rem;
-            box-shadow: var(--box-shadow-lg);
-            animation: fadeIn 0.6s ease-out;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Effet de brillance subtil */
-        .login-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.1) 100%);
-            pointer-events: none;
-        }
-
-        /* Header avec le style EXPERTS IA */
-        .login-header {
-            color: white;
-            text-align: center;
-            margin-bottom: 2.5rem;
-            z-index: 2;
-            position: relative;
-        }
-        
-        .login-header h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            letter-spacing: -0.02em;
-            font-family: 'Inter', sans-serif;
-        }
-        
-        .login-header .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.95;
-            margin: 0;
-            font-weight: 500;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Logo/icône */
-        .login-logo {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-        }
-
-        /* Formulaire avec le style de l'application */
-        .login-form {
-            background: var(--content-background);
-            border-radius: var(--border-radius-xl);
-            padding: 2.5rem;
-            box-shadow: var(--box-shadow-blue);
-            width: 100%;
-            max-width: 420px;
-            border: 1px solid var(--border-color-blue);
-            backdrop-filter: blur(10px);
-            z-index: 2;
-            position: relative;
-        }
-
-        .login-form h3 {
-            color: var(--text-color);
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            font-size: 1.25rem;
-        }
-
-        .login-form p {
-            color: var(--text-color-light);
-            margin-bottom: 1.5rem;
-            font-size: 0.95rem;
-        }
-
-        /* Champs de saisie avec le style EXPERTS IA */
-        .stTextInput > div > div > input {
-            font-size: 1.1rem !important;
-            padding: 0.875rem 1rem !important;
-            border-radius: var(--border-radius-lg) !important;
-            border: 2px solid var(--border-color) !important;
-            background: var(--secondary-background-color) !important;
-            transition: all 0.3s ease !important;
-            font-family: 'Inter', sans-serif !important;
-        }
-        
-        .stTextInput > div > div > input:focus {
-            border-color: var(--primary-color) !important;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-            background: var(--content-background) !important;
-        }
-
-        /* Boutons avec le style EXPERTS IA */
-        div.stButton > button {
-            background: var(--button-gradient) !important;
-            color: white !important;
-            font-weight: 600 !important;
-            font-size: 1.1rem !important;
-            padding: 0.875rem 2rem !important;
-            border-radius: var(--border-radius-lg) !important;
-            border: none !important;
-            width: 100% !important;
-            transition: all 0.3s ease !important;
-            font-family: 'Inter', sans-serif !important;
-            box-shadow: var(--box-shadow-blue) !important;
-        }
-        
-        div.stButton > button:hover {
-            background: var(--button-gradient-hover) !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3) !important;
-        }
-
-        /* Messages d'alerte avec le style EXPERTS IA */
-        .stAlert {
-            border-radius: var(--border-radius-lg) !important;
-            border: none !important;
-            box-shadow: var(--box-shadow-md) !important;
-        }
-
-        .stWarning {
-            background: linear-gradient(135deg, #FEF3C7 0%, #FFFFFF 100%) !important;
-            border-left: 4px solid #F59E0B !important;
-        }
-
-        .stError {
-            background: linear-gradient(135deg, #FEE2E2 0%, #FFFFFF 100%) !important;
-            border-left: 4px solid #EF4444 !important;
-        }
-
-        /* Notice de sécurité avec le style EXPERTS IA */
-        .security-notice {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: var(--border-radius-lg);
-            padding: 1.25rem;
-            margin-top: 2rem;
-            color: white;
-            text-align: center;
-            font-size: 0.95rem;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .login-container {
-                margin: 1rem 0;
-                padding: 2rem 1rem;
-            }
-            
-            .login-header h1 {
-                font-size: 2.5rem;
-            }
-            
-            .login-form {
-                padding: 2rem 1.5rem;
-                margin: 0 1rem;
-            }
-        }
-
-        /* Effet de particules subtil */
-        .login-container::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 2px,
-                rgba(255, 255, 255, 0.03) 2px,
-                rgba(255, 255, 255, 0.03) 4px
-            );
-            animation: float 20s linear infinite;
-            pointer-events: none;
-        }
-
-        @keyframes float {
-            0% { transform: rotate(0deg) translateX(0px); }
-            100% { transform: rotate(360deg) translateX(10px); }
-        }
-        </style>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("""
-        <div class="login-container">
-            <div class="login-header">
-                <div class="login-logo">🏗️</div>
-                <h1>EXPERTS IA</h1>
-                <p class="subtitle">Plateforme Sécurisée d'Experts en Construction du Québec</p>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Interface de connexion dans un conteneur centré
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            with st.container():
-                st.markdown('<div class="login-form">', unsafe_allow_html=True)
-                
-                st.markdown("### 🔐 Authentification Requise")
-                st.markdown("Veuillez saisir le mot de passe d'accès pour utiliser la plateforme.")
-                
-                password = st.text_input(
-                    "Mot de passe", 
-                    type="password",
-                    placeholder="Entrez votre mot de passe...",
-                    help="Contactez l'administrateur si vous n'avez pas le mot de passe"
-                )
-                
-                # Afficher les tentatives restantes
-                remaining = login_tracker.get_remaining_attempts()
-                if remaining < 5:
-                    if remaining > 0:
-                        st.warning(f"⚠️ {remaining} tentative(s) restante(s) avant blocage")
-                    else:
-                        st.error("❌ Plus de tentatives autorisées")
-                
-                if st.button("🚀 Se Connecter", key="login_button"):
-                    # Vérifier la limite de taux
-                    if not check_rate_limiting():
-                        st.error("❌ Trop de requêtes. Attendez un moment.")
-                        st.stop()
-                    
-                    # Sanitiser l'entrée
-                    password = sanitize_input(password)
-                    
-                    # Obtenir le mot de passe depuis les variables d'environnement
-                    app_password = os.environ.get("APP_PASSWORD")
-                    if not app_password:
-                        try:
-                            app_password = st.secrets.get("APP_PASSWORD")
-                        except Exception:
-                            pass
-                    
-                    if not app_password:
-                        st.error("❌ Configuration manquante: APP_PASSWORD non défini")
-                        st.info("💡 L'administrateur doit configurer la variable APP_PASSWORD")
-                        log_security_event("MISSING_APP_PASSWORD", "Configuration critique manquante", "CRITICAL")
-                        st.stop()
-                    
-                    if password == app_password:
-                        st.session_state.authenticated = True
-                        login_tracker.record_successful_login()
-                        st.success("✅ Authentification réussie ! Redirection...")
-                        log_security_event("SUCCESSFUL_AUTH", "Utilisateur connecté", "INFO")
-                        time.sleep(1)
-                        st.rerun()
-                    else:
-                        login_tracker.record_failed_attempt()
-                        remaining_after = login_tracker.get_remaining_attempts()
-                        
-                        if remaining_after > 0:
-                            st.error("❌ Mot de passe incorrect")
-                            st.warning(f"🔒 {remaining_after} tentative(s) restante(s)")
-                        else:
-                            st.error("❌ Compte temporairement bloqué")
-                            st.error("Trop de tentatives échouées")
-                            
-                        log_security_event("FAILED_AUTH", f"Tentative échouée, {remaining_after} restantes", "WARNING")
-                
-                st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Notice de sécurité avec le style EXPERTS IA
-        st.markdown("""
-        <div class="security-notice">
-            <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 0.75rem;">
-                🛡️ <strong style="margin-left: 0.5rem; font-size: 1.1rem;">Sécurité Renforcée</strong>
-            </div>
-            <div style="font-size: 0.9rem; line-height: 1.5;">
-                • <strong>Authentification obligatoire</strong> avec protection anti-brute force<br>
-                • <strong>60+ experts IA spécialisés</strong> en construction du Québec<br>
-                • <strong>Données sécurisées</strong> - Logs d'audit automatiques<br>
-                • <strong>Conformité professionnelle</strong> - Normes RBQ, OAQ, CMEQ
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.stop()
-
-# Appliquer l'authentification (désactivée en développement local)
-dev_mode = os.environ.get("DEV_MODE", "true").lower() == "true"
-if not dev_mode:
-    check_authentication()
-else:
-    print("🔓 MODE DÉVELOPPEMENT: Authentification désactivée")
+# Initialiser la clé API dans la session
+if 'user_api_key' not in st.session_state:
+    st.session_state.user_api_key = get_api_key()
 
 # --- Initialize Logic Classes & Conversation Manager ---
 if 'profile_manager' not in st.session_state:
@@ -1582,10 +1216,9 @@ if 'profile_manager' not in st.session_state:
         print("ProfileManager initialisé.")
     except Exception as e: st.error(f"Erreur critique: Init ProfileManager: {e}"); st.stop()
 
-if 'expert_advisor' not in st.session_state:
-    if not ANTHROPIC_API_KEY: st.error("Erreur critique: ANTHROPIC_API_KEY non configurée."); st.stop()
+if 'expert_advisor' not in st.session_state and st.session_state.user_api_key:
     try:
-        st.session_state.expert_advisor = ExpertAdvisor(api_key=ANTHROPIC_API_KEY)
+        st.session_state.expert_advisor = ExpertAdvisor(api_key=st.session_state.user_api_key)
         st.session_state.expert_advisor.profile_manager = st.session_state.profile_manager
         print("ExpertAdvisor initialisé.")
         available_profiles = st.session_state.profile_manager.get_profile_names()
@@ -1598,7 +1231,11 @@ if 'expert_advisor' not in st.session_state:
             st.warning("Aucun profil expert trouvé. Utilisation profil par défaut.")
             default_profile = st.session_state.expert_advisor.get_current_profile()
             st.session_state.selected_profile_name = default_profile.get("name", "Expert (Défaut)")
-    except Exception as e: st.error(f"Erreur critique: Init ExpertAdvisor: {e}"); st.exception(e); st.stop()
+    except Exception as e: 
+        st.error(f"Erreur lors de l'initialisation de l'ExpertAdvisor : {e}")
+        # Ne pas arrêter l'app, permettre à l'utilisateur de corriger la clé API
+        if 'expert_advisor' in st.session_state:
+            del st.session_state.expert_advisor
 
 if 'conversation_manager' not in st.session_state:
     try:
@@ -1641,6 +1278,38 @@ with st.sidebar:
             st.warning("Logo 'assets/logo.png' non trouvé.")
     except Exception as e:
         st.error(f"Erreur logo: {e}")
+    
+    # === Interface de saisie de clé API ===
+    st.markdown('<div class="sidebar-subheader">🔑 CONFIGURATION</div>', unsafe_allow_html=True)
+    
+    # Clé API Claude (sécurisée)
+    api_key_input = st.text_input(
+        "Clé API Anthropic Claude",
+        type="password",
+        value=st.session_state.user_api_key,
+        help="Entrez votre clé API Anthropic Claude pour utiliser l'assistant IA",
+        placeholder="sk-ant-api03-..."
+    )
+    
+    # Mettre à jour la clé API si elle a changé
+    if api_key_input != st.session_state.user_api_key:
+        st.session_state.user_api_key = api_key_input
+        # Réinitialiser l'expert advisor si la clé a changé
+        if 'expert_advisor' in st.session_state:
+            del st.session_state.expert_advisor
+        st.rerun()
+    
+    # Affichage du statut de connexion
+    if st.session_state.user_api_key:
+        if 'expert_advisor' in st.session_state:
+            st.success("✅ Assistant IA connecté")
+        else:
+            st.warning("⚠️ Clé API fournie, initialisation...")
+    else:
+        st.error("❌ Clé API requise pour utiliser l'assistant")
+        st.info("💡 Obtenez votre clé API sur https://console.anthropic.com")
+    
+    st.divider()
         
     # Améliorez le bouton "Nouvelle Consultation"
     st.markdown("""
@@ -1662,83 +1331,6 @@ with st.sidebar:
     }
     </style>
     """, unsafe_allow_html=True)
-
-    # --- Bouton de déconnexion (uniquement si authentifié) ---
-    # En production (Render), ce bouton apparaîtra après connexion
-    if st.session_state.get('authenticated', False):
-        st.markdown("""
-        <style>
-        div.stButton > button:has(span:contains("🚪 Déconnexion")) {
-            background: linear-gradient(90deg, #EF4444 0%, #DC2626 100%) !important;
-            color: white !important;
-            font-weight: 600 !important;
-            padding: 10px 15px !important;
-            font-size: 0.95rem !important;
-            border-radius: 8px !important;
-            border: none !important;
-            transition: all 0.3s ease !important;
-            width: 100% !important;
-            margin-bottom: 1rem !important;
-        }
-        div.stButton > button:has(span:contains("🚪 Déconnexion")):hover {
-            background: linear-gradient(90deg, #DC2626 0%, #B91C1C 100%) !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-        
-        if st.button("🚪 Déconnexion", key="logout_button", use_container_width=True):
-            # Effacer toutes les données de session sensibles
-            if 'authenticated' in st.session_state:
-                del st.session_state.authenticated
-            if 'messages' in st.session_state:
-                del st.session_state.messages
-            if 'current_conversation_id' in st.session_state:
-                del st.session_state.current_conversation_id
-            # Effacer toute la session
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
-            st.success("🔒 Déconnexion réussie")
-            time.sleep(1)
-            st.rerun()
-        
-        st.markdown('<hr style="margin: 0.5rem 0; border-top: 1px solid var(--border-color);">', unsafe_allow_html=True)
-    
-    # --- Indicateur de mode (pour debug) ---
-    dev_mode = os.environ.get("DEV_MODE", "true").lower() == "true"
-    if dev_mode:
-        st.markdown("""
-        <div style="background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%); 
-                    color: white; 
-                    padding: 8px 12px; 
-                    border-radius: 8px; 
-                    text-align: center; 
-                    font-size: 0.85rem; 
-                    margin-bottom: 1rem;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            🔓 <strong>Mode Développement</strong><br>
-            <span style="font-size: 0.75rem; opacity: 0.9;">Authentification désactivée</span>
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        if st.session_state.get('authenticated', False):
-            st.markdown("""
-            <div style="background: linear-gradient(135deg, #3B82F6 0%, #1F2937 100%); 
-                        color: white; 
-                        padding: 8px 12px; 
-                        border-radius: 8px; 
-                        text-align: center; 
-                        font-size: 0.85rem; 
-                        margin-bottom: 1rem;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                🔒 <strong>Mode Production</strong><br>
-                <span style="font-size: 0.75rem; opacity: 0.9;">Connecté et sécurisé</span>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    # Séparateur avant le bouton Nouvelle Consultation
-    st.markdown('<hr style="margin: 1rem 0; border-top: 1px solid var(--border-color);">', unsafe_allow_html=True)
 
     if st.button("Nouvelle Consultation", key="new_consult_button_top", use_container_width=True):
         save_current_conversation()
@@ -3327,21 +2919,37 @@ div[data-testid="stChatInput"] button:disabled {
 </style>
 """, unsafe_allow_html=True)
 
-prompt = st.chat_input("Posez votre question ou tapez /search [recherche web]...")
-
-# --- Traitement du nouveau prompt ---
-if prompt:
-    user_msg = {"role": "user", "content": prompt, "id": datetime.now().isoformat()}
-    st.session_state.messages.append(user_msg)
-    save_current_conversation()
-    if 'html_download_data' in st.session_state: del st.session_state.html_download_data
-    if 'single_message_download' in st.session_state: del st.session_state.single_message_download
-    if 'show_copy_content' in st.session_state: del st.session_state.show_copy_content
+# Interface de chat seulement si clé API disponible
+if st.session_state.user_api_key and 'expert_advisor' in st.session_state:
+    prompt = st.chat_input("Posez votre question ou tapez /search [recherche web]...")
+    
+    # --- Traitement du nouveau prompt ---
+    if prompt:
+        user_msg = {"role": "user", "content": prompt, "id": datetime.now().isoformat()}
+        st.session_state.messages.append(user_msg)
+        save_current_conversation()
+        if 'html_download_data' in st.session_state: del st.session_state.html_download_data
+        if 'single_message_download' in st.session_state: del st.session_state.single_message_download
+        if 'show_copy_content' in st.session_state: del st.session_state.show_copy_content
+        st.rerun()
+elif not st.session_state.user_api_key:
+    # Message d'information si pas de clé API
+    st.info("🔑 **Clé API Anthropic Claude requise**\n\nVeuillez saisir votre clé API dans la barre latérale pour commencer à utiliser EXPERTS IA.")
+    st.markdown("""
+    ### Comment obtenir votre clé API ?
+    1. Rendez-vous sur [console.anthropic.com](https://console.anthropic.com)
+    2. Créez un compte ou connectez-vous
+    3. Allez dans **API Keys** 
+    4. Créez une nouvelle clé API
+    5. Copiez-collez la clé dans le champ de la barre latérale
+    """)
+else:
+    st.warning("⚠️ Initialisation de l'assistant IA en cours...")
     st.rerun()
 
 # --- LOGIQUE DE RÉPONSE / RECHERCHE / ANALYSE ---
 action_to_process = None
-if st.session_state.messages and 'expert_advisor' in st.session_state:
+if st.session_state.messages and 'expert_advisor' in st.session_state and st.session_state.user_api_key:
     last_message = st.session_state.messages[-1]
     msg_id = last_message.get("id", last_message.get("content")) # Use ID if available, else content hash (less reliable)
     if msg_id not in st.session_state.processed_messages: action_to_process = last_message
