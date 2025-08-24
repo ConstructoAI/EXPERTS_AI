@@ -2934,8 +2934,8 @@ elif not st.session_state.user_api_key:
     # Message d'information si pas de clé API
     st.info("🔑 **Clé API requise**\n\nVeuillez saisir votre clé API dans la barre latérale pour commencer à utiliser EXPERTS IA.")
     st.markdown("""
-    **Pour obtenir une clé API, contactez Sylvain Leduc :**  
-    📧 [sylvainleduc2000@gmail.com](mailto:sylvainleduc2000@gmail.com)  
+    **Pour obtenir une clé API, contactez-nous :**  
+    📧 [info@constructoai.ca](mailto:info@constructoai.ca)  
     📱 (514) 820-1972
     """)
 else:
