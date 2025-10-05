@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Soumission budgétaire - Construction Héritage">
+    <title>SOUMISSION BUDGÉTAIRE - Construction Héritage</title>
+    <style>
+        /* Reset et Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            font-size: 10px;
+            line-height: 1.4;
+            color: #333;
+            background: white;
+        }
+
+        /* Conteneur principal */
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0.5in;
+            background: white;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #4b5563;
+            padding-bottom: 15px;
+        }
+
+        .logo-section {
+            flex: 1;
+        }
+
+        .company-info {
+            text-align: right;
+            font-size: 10px;
+            line-height: 1.3;
+            color: #555;
+        }
+
+        .company-name {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 3px;
+            color: #374151;
+        }
+
+        /* Titre */
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin: 20px 0 10px 0;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4b5563;
+        }
+
+        .subtitle {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Informations du projet */
+        .project-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .info-section {
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 4px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .info-section h4 {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 8px;
+            color: #374151;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #d1d5db;
+        }
+
+        .info-section p {
+            font-size: 10px;
+            line-height: 1.5;
+            margin-bottom: 3px;
+        }
+
+        .info-section strong {
+            color: #374151;
+        }
+
+        /* Tables */
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #374151;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: #f3f4f6;
+            border-left: 3px solid #4b5563;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: white;
+        }
+
+        .table th {
+            padding: 8px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 10px;
+            background: #4b5563;
+            color: white;
+            border: 1px solid #374151;
+        }
+
+        .table th:nth-child(1) { width: 60%; }
+        .table th:nth-child(2) { width: 20%; text-align: center; }
+        .table th:nth-child(3) { width: 20%; text-align: right; }
+
+        .table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            font-size: 10px;
+            vertical-align: top;
+        }
+
+        .table td:nth-child(2) { text-align: center; }
+        .table td:nth-child(3) { text-align: right; font-weight: bold; }
+
+        .item-description {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .item-details {
+            font-size: 9px;
+            color: #666;
+            margin-top: 3px;
+            font-style: italic;
+            font-weight: normal;
+        }
+
+        .subtotal-row td {
+            background: #f3f4f6;
+            font-weight: bold;
+            padding: 8px;
+        }
+
+        /* Récapitulatif */
+        .summary-box {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%);
+            border-radius: 6px;
+            border-left: 4px solid #4b5563;
+        }
+
+        .summary-box h4 {
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .summary-table {
+            width: 100%;
+            font-size: 11px;
+        }
+
+        .summary-table td {
+            padding: 6px 10px;
+        }
+
+        .summary-table .label {
+            text-align: right;
+            padding-right: 20px;
+            color: #555;
+        }
+
+        .summary-table .value {
+            text-align: right;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            width: 150px;
+            color: #111;
+        }
+
+        .summary-table .total-row {
+            border-top: 2px solid #4b5563;
+            font-size: 14px;
+            background: white;
+        }
+
+        /* Conditions et Exclusions */
+        .conditions, .exclusions {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fafafa;
+            border: 1px solid #e5e7eb;
+            border-left: 4px solid #4b5563;
+            border-radius: 4px;
+        }
+
+        .conditions h4, .exclusions h4 {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #374151;
+            font-size: 11px;
+        }
+
+        .conditions ul, .exclusions ul {
+            margin-left: 20px;
+        }
+
+        .conditions li, .exclusions li {
+            margin-bottom: 5px;
+            font-size: 9px;
+            line-height: 1.5;
+            color: #555;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 9px;
+            color: #666;
+            border-top: 2px solid #4b5563;
+            padding-top: 20px;
+        }
+
+        .footer .signature-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            margin: 30px 0;
+            padding: 0 50px;
+        }
+
+        .signature-block {
+            text-align: center;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #333;
+            margin-bottom: 5px;
+            height: 40px;
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+
+        /* Impression */
+        @media print {
+            body {
+                background: white;
+            }
+
+            .container {
+                margin: 0;
+                padding: 0.3in;
+                max-width: 8.5in;
+            }
+
+            .summary-box {
+                page-break-inside: avoid;
+            }
+
+            .conditions, .exclusions {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Bouton Mode Édition -->
+    <div style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+        <button id="toggleEditBtn" onclick="toggleEditMode()" style="
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        ">
+            ✏️ Activer Édition
+        </button>
+    </div>
+
+    <script>
+        let isEditMode = false;
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const btn = document.getElementById('toggleEditBtn');
+            const editableElements = document.querySelectorAll('.editable');
+
+            if (isEditMode) {
+                // Activer le mode édition
+                btn.textContent = '🔒 Verrouiller';
+                btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                editableElements.forEach(el => {
+                    el.contentEditable = 'true';
+                    el.style.outline = '1px dashed #3b82f6';
+                    el.style.padding = '2px';
+                });
+            } else {
+                // Désactiver le mode édition
+                btn.textContent = '✏️ Activer Édition';
+                btn.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
+                editableElements.forEach(el => {
+                    el.contentEditable = 'false';
+                    el.style.outline = 'none';
+                });
+            }
+        }
+
+        // Masquer le bouton lors de l'impression
+        window.addEventListener('beforeprint', function() {
+            document.getElementById('toggleEditBtn').style.display = 'none';
+        });
+
+        window.addEventListener('afterprint', function() {
+            document.getElementById('toggleEditBtn').style.display = 'block';
+        });
+    </script>
+
+    <div class="container">
+        <!-- Header avec informations de l'entreprise -->
+        <div class="header">
+            <div class="logo-section">
+                <!-- Espace pour logo si nécessaire -->
+            </div>
+            <div class="company-info">
+                <div class="company-name">Constructo AI Inc.</div>
+                <div>1760 rue Jacques-Cartier Sud</div>
+                <div>Farnham (Québec) J2N 1Y8</div>
+                <div>Tél: 514-820-1972</div>
+                <div>info@constructoai.ca | www.constructoai.ca</div>
+                <div style="margin-top: 3px; font-size: 9px;">
+                    RBQ: 1234-5678-01 | NEQ: 1234567890
+                </div>
+                <div style="margin-top: 2px; font-size: 8px; font-style: italic; color: #666;">
+                    Excellence en construction intelligente
+                </div>
+            </div>
+        </div>
+
+        <!-- Titre -->
+        <h1 class="title">SOUMISSION BUDGÉTAIRE</h1>
+        <div class="subtitle">
+            <strong>N° de soumission:</strong> 2025-001 &nbsp;&nbsp;|&nbsp;&nbsp;
+            <strong>Date:</strong> <?php echo date('Y-m-d'); ?>
+        </div>
+
+        <!-- Informations du projet -->
+        <div class="project-info">
+            <div class="info-section">
+                <h4>CLIENT</h4>
+                <p><strong>Nom:</strong> <span class="editable">[Nom du client]</span></p>
+                <p><strong>Adresse:</strong> <span class="editable">[Adresse complète]</span></p>
+                <p><strong>Ville:</strong> <span class="editable">[Ville, Province]</span></p>
+                <p><strong>Code postal:</strong> <span class="editable">[H0H 0H0]</span></p>
+            </div>
+            <div class="info-section">
+                <h4>PROJET</h4>
+                <p><strong>Description:</strong> <span class="editable">[Description du projet]</span></p>
+                <p><strong>Type:</strong> <span class="editable">Construction neuve</span></p>
+                <p><strong>Superficie:</strong> <span class="editable">[X] pi²</span></p>
+                <p><strong>Étages:</strong> <span class="editable">[X]</span></p>
+            </div>
+            <div class="info-section">
+                <h4>CONTACT</h4>
+                <p><strong>Responsable:</strong> <span class="editable">[Nom du contact]</span></p>
+                <p><strong>Téléphone:</strong> <span class="editable">[514-000-0000]</span></p>
+                <p><strong>Courriel:</strong> <span class="editable">[email@exemple.com]</span></p>
+            </div>
+        </div>
+
+        <!-- Section Travaux préparatoires -->
+        <div class="section">
+            <div class="section-title">TRAVAUX PRÉPARATOIRES ET DÉMOLITION</div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Quantité</th>
+                        <th>Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="item-description">Permis et études</div>
+                            <div class="item-details">Permis de construction, étude géotechnique, certificat de localisation</div>
+                        </td>
+                        <td>1</td>
+                        <td>0,00 $</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="item-description">Démolition et décontamination</div>
+                            <div class="item-details">Démolition de structures existantes, décontamination si applicable</div>
+                        </td>
+                        <td>1</td>
+                        <td>0,00 $</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="item-description">Préparation du terrain</div>
+                            <div class="item-details">Déboisement, nivellement, protection, services temporaires</div>
+                        </td>
+                        <td>1</td>
+                        <td>0,00 $</td>
+                    </tr>
+                    <tr class="subtotal-row">
+                        <td colspan="2">Sous-total</td>
+                        <td>0,00 $</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Récapitulatif des coûts -->
+        <div class="summary-box">
+            <h4>RÉCAPITULATIF DES COÛTS</h4>
+            <table class="summary-table">
+                <tr>
+                    <td class="label">Travaux préparatoires:</td>
+                    <td class="value editable">0,00 $</td>
+                </tr>
+                <tr style="border-top: 1px solid #ddd; font-weight: bold;">
+                    <td class="label">TOTAL DES TRAVAUX:</td>
+                    <td class="value editable">0,00 $</td>
+                </tr>
+                <tr>
+                    <td class="label">Administration (3%):</td>
+                    <td class="value editable">0,00 $</td>
+                </tr>
+                <tr>
+                    <td class="label">Contingences (12%):</td>
+                    <td class="value editable">0,00 $</td>
+                </tr>
+                <tr>
+                    <td class="label">Profit de l'entrepreneur (15%):</td>
+                    <td class="value editable">0,00 $</td>
+                </tr>
+                <tr style="border-top: 1px solid #4b5563; font-weight: bold;">
+                    <td class="label">Total avant taxes:</td>
+                    <td class="value editable">0,00 $</td>
+                </tr>
+                <tr>
+                    <td class="label">TPS (5%):</td>
+                    <td class="value editable">0,00 $</td>
+                </tr>
+                <tr>
+                    <td class="label">TVQ (9.975%):</td>
+                    <td class="value editable">0,00 $</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="label"><strong>INVESTISSEMENT TOTAL:</strong></td>
+                    <td class="value editable"><strong>0,00 $</strong></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Conditions -->
+        <div class="conditions">
+            <h4>CONDITIONS ET MODALITÉS</h4>
+            <ul>
+                <li><strong>Validité:</strong> <span class="editable">Cette soumission est valide pour 30 jours à partir de la date d'émission.</span></li>
+                <li><strong>Délai d'exécution:</strong> <span class="editable">[X] semaines</span> après l'obtention des permis et signature du contrat.</li>
+                <li><strong>Modalités de paiement:</strong> <span class="editable">30% à la signature, 35% début des travaux, paiements progressifs selon avancement, 35% retenue finale.</span></li>
+                <li><strong>Garanties:</strong> <span class="editable">1 an main-d'œuvre, 5 ans toiture, 10 ans structure, selon normes GCR.</span></li>
+                <li><strong>Augmentation des matériaux:</strong> <span class="editable">Prix sujets à ajustement si augmentation >5% entre soumission et commande.</span></li>
+                <li><strong>Conditions de sol:</strong> <span class="editable">Prix basés sur sol normal. Roc ou conditions spéciales en supplément.</span></li>
+            </ul>
+        </div>
+
+        <!-- Exclusions -->
+        <div class="exclusions">
+            <h4>EXCLUSIONS PRINCIPALES</h4>
+            <ul>
+                <li>Tous les électroménagers</li>
+                <li>Luminaires décoratifs (pose incluse, fourniture exclue)</li>
+                <li>Ameublement, décoration, système d'alarme et caméras</li>
+                <li>Piscine, spa et foyer (préparation structurale incluse, appareils exclus)</li>
+                <li>Aménagement paysager élaboré</li>
+                <li>Taxes de mutation et frais de notaire</li>
+                <li>Frais de raccordement aux services publics au-delà de 50 pieds</li>
+                <li>Modifications aux plans après signature (ordres de changement facturés)</li>
+            </ul>
+        </div>
+
+        <!-- Zone de signatures -->
+        <div style="margin-top: 40px;">
+            <div class="signature-area">
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <div>Client</div>
+                    <div style="margin-top: 5px;">Date: ________________</div>
+                </div>
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <div>Entrepreneur</div>
+                    <div style="margin-top: 5px;">Date: ________________</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>Soumission préparée par:</strong></p>
+            <p style="margin-top: 10px;">
+                <strong>Sylvain Leduc, Président / Programmeur principal</strong><br>
+                Constructo AI Inc.
+            </p>
+            <p style="margin-top: 15px;">
+                Pour information: 514-820-1972 | info@constructoai.ca
+            </p>
+            <p style="margin-top: 20px; font-weight: bold;">
+                Merci de votre confiance!
+            </p>
+            <p style="margin-top: 20px; font-size: 8px; color: #888;">
+                Cette soumission est confidentielle et demeure la propriété de Constructo AI Inc.<br>
+                © 2025 Constructo AI Inc. - Tous droits réservés.<br>
+                Excellence en construction intelligente
+            </p>
+        </div>
+    </div>
+</body>
+</html>

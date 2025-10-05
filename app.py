@@ -7,24 +7,60 @@ import markdown
 from datetime import datetime
 from dotenv import load_dotenv
 
+# --- Configuration de la Page (DOIT ÊTRE EN PREMIER) ---
+# Détecter si c'est une vue publique ou admin
+query_params = st.query_params
+is_public_view = 'token' in query_params
+
+if is_public_view:
+    # Configuration pour vue publique client
+    st.set_page_config(
+        page_title="Soumission - Signature",
+        page_icon="📋",
+        layout="wide",
+        initial_sidebar_state="collapsed"
+    )
+else:
+    # Configuration pour vue admin
+    st.set_page_config(
+        page_title="EXPERTS IA",
+        page_icon="🏗️",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+
 # Importer les classes logiques et le gestionnaire de conversation
 try:
     from expert_logic import ExpertAdvisor, ExpertProfileManager
     from conversation_manager import ConversationManager
+    from soumission_generator import SoumissionGenerator
+    from entreprise_config import show_entreprise_config
+    from client_config import show_clients_management, get_client_selector
+    from soumissions_db import save_soumission, get_all_soumissions, get_soumission_by_id, update_soumission_statut, delete_soumission, get_soumissions_stats
+    from soumissions_ui import show_soumissions_management, show_soumission_detail
+    from soumission_publique import show_soumission_client_view
+    # Nouveaux modules C2B
+    from bon_commande_simple import show_bon_commande_interface
+    from fournisseurs_manager import show_fournisseurs_interface
+    from soumission_heritage import show_soumission_heritage
+    from backup_manager import show_backup_interface
+    # Module calendrier
+    from calendar_manager import show_calendar_interface, show_upcoming_events_widget
+    # Module TAKEOFF AI
+    from takeoff_module import show_takeoff_interface, __version__ as takeoff_version, __phase__ as takeoff_phase
 except ImportError as e:
     st.error(f"Erreur d'importation des modules locaux: {e}")
-    st.error("Assurez-vous que les fichiers 'expert_logic.py' et 'conversation_manager.py' existent dans le même dossier.")
+    st.error("Assurez-vous que tous les fichiers nécessaires existent dans le même dossier.")
     st.stop()
 
-# Modules supprimés : project_manager, inventory_manager, database_integration, knowledge_base_ui
+# DÉTECTION DU LIEN PUBLIC
+# Si un token est présent dans l'URL, afficher la vue client
+if is_public_view:
+    token = query_params['token']
+    show_soumission_client_view(token)
+    st.stop()  # Ne pas afficher le reste de l'application
 
-# --- Configuration de la Page Principale ---
-st.set_page_config(
-    page_title="EXPERTS IA",
-    page_icon="🏗️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# Modules supprimés : project_manager, inventory_manager, database_integration, knowledge_base_ui
 
 # --- Fonction pour charger le CSS local ---
 def local_css(file_name):
@@ -217,12 +253,37 @@ def display_analysis_result(analysis_response, analysis_details):
     st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Fonction de Génération HTML ---
-def generate_html_report(messages, profile_name, conversation_id=None, client_name=""):
+def generate_html_report(messages, profile_name, conversation_id=None, client_info=None):
     """Génère un rapport HTML autonome à partir de l'historique."""
     custom_css = load_css_content("style.css")
     now = datetime.now().strftime("%d/%m/%Y à %H:%M:%S")
     conv_id_display = f" (ID: {conversation_id})" if conversation_id else ""
-    client_display = f"<p><strong>Client :</strong> {html.escape(client_name)}</p>" if client_name else ""
+
+    # Debug: afficher le client_info
+    print(f"[RAPPORT HTML] client_info reçu: {client_info}")
+
+    # Affichage détaillé du client si disponible
+    client_display = ""
+    if client_info:
+        if isinstance(client_info, dict):
+            # Client complet de la BD
+            client_display = f"""
+            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%); padding: 1rem; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 1rem;">
+                <p style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">
+                    👤 Client : {html.escape(client_info.get('nom', ''))}
+                </p>
+                <div style="font-size: 0.9rem; color: #4b5563; line-height: 1.6;">
+                    {f"<p style='margin: 0.2rem 0;'>📍 {html.escape(client_info.get('adresse', ''))}, {html.escape(client_info.get('ville', ''))} {html.escape(client_info.get('code_postal', ''))}</p>" if client_info.get('adresse') else ""}
+                    {f"<p style='margin: 0.2rem 0;'>📧 {html.escape(client_info.get('email', ''))}</p>" if client_info.get('email') else ""}
+                    {f"<p style='margin: 0.2rem 0;'>📞 {html.escape(client_info.get('telephone_bureau', ''))}</p>" if client_info.get('telephone_bureau') else ""}
+                    {f"<p style='margin: 0.2rem 0;'>👨‍💼 Contact: {html.escape(client_info.get('contact_principal_nom', ''))} ({html.escape(client_info.get('contact_principal_titre', ''))})</p>" if client_info.get('contact_principal_nom') else ""}
+                </div>
+            </div>
+            """
+        else:
+            # Juste un nom (ancien format)
+            client_display = f"<p><strong>Client :</strong> {html.escape(str(client_info))}</p>"
+
     messages_html = ""
     md_converter = markdown.Markdown(extensions=['tables', 'fenced_code'])
 
@@ -483,13 +544,36 @@ def generate_html_report(messages, profile_name, conversation_id=None, client_na
     return html_output
    
 # --- [DEBUT DE LA SECTION FUSIONNÉE] Fonction pour exporter un message individuel (de la Version 02) ---
-def generate_single_message_html(message_content, message_role, profile_name, message_index=0, timestamp=None):
+def generate_single_message_html(message_content, message_role, profile_name, message_index=0, timestamp=None, client_info=None):
     """Génère HTML pour un message individuel avec style professionnel amélioré."""
-    
+
     if not timestamp:
         timestamp = datetime.now().strftime("%d/%m/%Y à %H:%M:%S")
-    
+
     base_css = load_css_content("style.css")
+
+    # Debug: afficher le client_info
+    print(f"[MESSAGE HTML] client_info reçu: {client_info}")
+
+    # Préparer l'affichage client
+    client_display = ""
+    if client_info:
+        if isinstance(client_info, dict):
+            client_display = f"""
+            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%); padding: 1rem; border-radius: 8px; border-left: 4px solid #3b82f6; margin: 0 30px 1rem 30px;">
+                <p style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">
+                    👤 Client : {html.escape(client_info.get('nom', ''))}
+                </p>
+                <div style="font-size: 0.9rem; color: #4b5563; line-height: 1.6;">
+                    {f"<p style='margin: 0.2rem 0;'>📍 {html.escape(client_info.get('adresse', ''))}, {html.escape(client_info.get('ville', ''))} {html.escape(client_info.get('code_postal', ''))}</p>" if client_info.get('adresse') else ""}
+                    {f"<p style='margin: 0.2rem 0;'>📧 {html.escape(client_info.get('email', ''))}</p>" if client_info.get('email') else ""}
+                    {f"<p style='margin: 0.2rem 0;'>📞 {html.escape(client_info.get('telephone_bureau', ''))}</p>" if client_info.get('telephone_bureau') else ""}
+                    {f"<p style='margin: 0.2rem 0;'>👨‍💼 Contact: {html.escape(client_info.get('contact_principal_nom', ''))} ({html.escape(client_info.get('contact_principal_titre', ''))})</p>" if client_info.get('contact_principal_nom') else ""}
+                </div>
+            </div>
+            """
+        else:
+            client_display = f"<p style='font-size: 0.85rem; color: #6b7280;'><strong>Client:</strong> {html.escape(str(client_info))}</p>"
     
     if message_role == "user":
         role_display = "Utilisateur"
@@ -806,6 +890,7 @@ def generate_single_message_html(message_content, message_role, profile_name, me
                 </div>
             </div>
         </div>
+        {client_display}
         <div class="message-content">
             {content_html}
         </div>
@@ -921,9 +1006,19 @@ def create_export_sidebar_section():
     """Section d'export complète pour la sidebar."""
     
     st.markdown('<div class="sidebar-subheader">📥 EXPORT</div>', unsafe_allow_html=True)
-    
-    # Export conversation complète (conserver l'existant)
-    client_name_export = st.text_input("Nom client (optionnel)", key="client_name_export", placeholder="Pour rapport HTML")
+
+    # Export conversation complète - Sélection client depuis BD
+    with st.expander("👤 Client pour export (optionnel)", expanded=False):
+        st.caption("Sélectionnez un client pour inclure ses informations dans le rapport HTML.")
+        client_pour_export = get_client_selector(key_suffix="export_conversation")
+        if client_pour_export:
+            st.success(f"✅ {client_pour_export['nom']}")
+            st.session_state.client_pour_export_conversation = client_pour_export
+        else:
+            st.session_state.client_pour_export_conversation = None
+
+    # Récupérer le client depuis session_state
+    client_info_export = st.session_state.get('client_pour_export_conversation', None)
     
     st.markdown("""
     <style>
@@ -962,7 +1057,7 @@ def create_export_sidebar_section():
                     current_profile = st.session_state.expert_advisor.get_current_profile() if 'expert_advisor' in st.session_state else None
                     if current_profile: profile_name = current_profile.get('name', 'Expert')
                     conv_id = st.session_state.current_conversation_id
-                    html_string = generate_html_report(st.session_state.messages, profile_name, conv_id, client_name_export)
+                    html_string = generate_html_report(st.session_state.messages, profile_name, conv_id, client_info_export)
                     if html_string:
                         id_part = f"Conv{conv_id}" if conv_id else datetime.now().strftime('%Y%m%d_%H%M')
                         filename = f"Rapport_EXPERTS_IA_{id_part}.html"
@@ -1030,18 +1125,32 @@ def create_export_sidebar_section():
                 st.caption(f"Total: {len(content_preview)} caractères")
             else:
                 st.markdown(content_preview)
-        
+
+        # Sélection client pour export message individuel
+        with st.expander("👤 Client (optionnel)", expanded=False):
+            st.caption("Ajoutez les infos client au message exporté.")
+            client_pour_message = get_client_selector(key_suffix="export_message")
+            if client_pour_message:
+                st.success(f"✅ {client_pour_message['nom']}")
+                st.session_state.client_pour_export_message = client_pour_message
+            else:
+                st.session_state.client_pour_export_message = None
+
+        # Récupérer le client depuis session_state
+        client_info_message = st.session_state.get('client_pour_export_message', None)
+
         # Boutons d'export
         if st.button("📄 Exporter en HTML", key="export_single_html", use_container_width=True):
             try:
                 profile = st.session_state.expert_advisor.get_current_profile()
                 profile_name = profile.get('name', 'Expert') if profile else 'Expert'
-                
+
                 html_content = generate_single_message_html(
-                    selected_msg['content'], 
-                    selected_msg['role'], 
-                    profile_name, 
-                    selected_msg['index']
+                    selected_msg['content'],
+                    selected_msg['role'],
+                    profile_name,
+                    selected_msg['index'],
+                    client_info=client_info_message
                 )
                 
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -1088,6 +1197,175 @@ def create_export_sidebar_section():
             if st.button("❌ Fermer", key="close_copy"):
                 st.session_state.pop('show_copy_content', None)
                 st.rerun()
+
+    # ============================================================
+    # SECTION SOUMISSION CLIENT
+    # ============================================================
+
+    st.markdown("---")
+    st.markdown('<div class="sidebar-subheader">📄 SOUMISSION CLIENT</div>', unsafe_allow_html=True)
+
+    if st.session_state.messages and len(st.session_state.messages) > 0:
+
+        # Styles pour les boutons de soumission
+        st.markdown("""
+        <style>
+        div.stButton > button:has(span:contains("Générer Soumission")) {
+            background: linear-gradient(90deg, #fde68a 0%, #fbbf24 100%) !important;
+            color: #92400e !important; font-weight: 600 !important; border: none !important;
+        }
+        div.stButton > button:has(span:contains("Générer Soumission"))::before { content: "🔄 " !important; }
+        div.stButton > button:has(span:contains("Générer Soumission")):hover {
+            background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%) !important;
+            transform: translateY(-2px) !important; box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3) !important;
+        }
+        div.stButton > button:has(span:contains("Télécharger Soumission")) {
+            background: linear-gradient(90deg, #86efac 0%, #22c55e 100%) !important;
+            color: white !important; font-weight: 600 !important; border: none !important;
+        }
+        div.stButton > button:has(span:contains("Télécharger Soumission"))::before { content: "💾 " !important; }
+        div.stButton > button:has(span:contains("Télécharger Soumission")):hover {
+            background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%) !important;
+            transform: translateY(-2px) !important; box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3) !important;
+        }
+        div.stButton > button:has(span:contains("Régénérer")) {
+            background: linear-gradient(90deg, #cbd5e1 0%, #94a3b8 100%) !important;
+            color: #334155 !important; font-weight: 500 !important; border: none !important; font-size: 0.85rem !important;
+        }
+        div.stButton > button:has(span:contains("Régénérer"))::before { content: "🔄 " !important; }
+        </style>
+        """, unsafe_allow_html=True)
+
+        # Sélection du client (optionnel)
+        with st.expander("📋 Sélectionner un client (optionnel)", expanded=False):
+            st.caption("Si vous sélectionnez un client, ses informations seront automatiquement utilisées dans la soumission.")
+            client_selectionne = get_client_selector(key_suffix="soumission")
+
+            if client_selectionne:
+                st.success(f"✅ Client sélectionné : {client_selectionne['nom']}")
+                # Stocker le client sélectionné dans la session
+                st.session_state.client_pour_soumission = client_selectionne
+            else:
+                st.session_state.pop('client_pour_soumission', None)
+
+        # Bouton pour générer la soumission
+        if st.button("Générer Soumission", key="gen_soumission_btn", use_container_width=True, help="Extraire les données et générer la soumission client"):
+            with st.spinner("🔍 Analyse de la conversation et extraction des données..."):
+                try:
+                    # Vérifier si on a une clé API
+                    if not st.session_state.get('user_api_key'):
+                        st.sidebar.error("❌ Veuillez d'abord entrer votre clé API Anthropic")
+                    else:
+                        # Créer un client Anthropic directement si expert_advisor n'existe pas
+                        if 'expert_advisor' in st.session_state and st.session_state.expert_advisor:
+                            anthropic_client = st.session_state.expert_advisor.anthropic
+                        else:
+                            from anthropic import Anthropic
+                            anthropic_client = Anthropic(api_key=st.session_state.user_api_key)
+
+                        soumission_gen = SoumissionGenerator(anthropic_client)
+
+                        # Extraction des données
+                        st.sidebar.info("⚙️ Extraction en cours...")
+                        data = soumission_gen.extract_estimation_data(st.session_state.messages)
+
+                        # Vérification template
+                        template_path = os.path.join(os.path.dirname(__file__), "template.html")
+                        if not os.path.exists(template_path):
+                            st.sidebar.error(f"❌ Template introuvable: {template_path}")
+                        else:
+                            # Génération HTML
+                            st.sidebar.info("📝 Génération du document...")
+
+                            # Récupérer le client sélectionné s'il existe
+                            client_db = st.session_state.get('client_pour_soumission', None)
+
+                            html_soumission = soumission_gen.populate_template(
+                                data,
+                                template_path,
+                                client_from_db=client_db
+                            )
+
+                            # Sauvegarder en session_state
+                            st.session_state.soumission_html = html_soumission
+                            st.session_state.soumission_data = data
+
+                            # Sauvegarder dans la base de données
+                            try:
+                                client_id = client_db.get('id') if client_db else None
+                                conv_id = st.session_state.get('current_conversation_id')
+                                profile = st.session_state.expert_advisor.get_current_profile() if 'expert_advisor' in st.session_state else None
+                                profile_name = profile.get('name', 'Expert') if profile else 'Expert'
+
+                                soumission_id = save_soumission(
+                                    data=data,
+                                    html_content=html_soumission,
+                                    client_id=client_id,
+                                    conversation_id=conv_id,
+                                    expert_profile=profile_name
+                                )
+                                st.session_state.current_soumission_id = soumission_id
+                                st.sidebar.success(f"✅ Soumission #{soumission_id} générée et sauvegardée !")
+                            except Exception as e:
+                                st.sidebar.warning(f"⚠️ Soumission générée mais erreur sauvegarde: {e}")
+                                st.sidebar.success("✅ Soumission générée avec succès !")
+
+                            st.rerun()  # Rafraîchir pour afficher le bouton téléchargement
+
+                except Exception as e:
+                    st.sidebar.error(f"❌ Erreur: {str(e)}")
+                    print(f"[ERREUR SOUMISSION] {str(e)}")
+                    import traceback
+                    traceback.print_exc()
+
+        # Bouton téléchargement (apparaît après génération réussie)
+        if 'soumission_html' in st.session_state and st.session_state.soumission_html:
+
+            # Nom du fichier basé sur les données extraites
+            try:
+                data = st.session_state.soumission_data
+                client_name = data.get('client', {}).get('nom', 'client')
+                # Nettoyer le nom pour nom de fichier
+                client_name = "".join(c for c in client_name if c.isalnum() or c in (' ', '-', '_')).strip()
+                if not client_name or client_name == '[Nom du client]':
+                    client_name = "client"
+
+                numero = data.get('numero_soumission', datetime.now().strftime('%Y%m%d'))
+                filename = f"Soumission_{numero}_{client_name}.html"
+            except:
+                filename = f"Soumission_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+
+            st.download_button(
+                label="Télécharger Soumission HTML",
+                data=st.session_state.soumission_html.encode('utf-8'),
+                file_name=filename,
+                mime="text/html",
+                key="download_soumission_html",
+                use_container_width=True,
+                help="Télécharger la soumission au format HTML"
+            )
+
+            # Bouton pour régénérer (remplacer l'existante)
+            if st.button("Régénérer", key="regen_soumission", use_container_width=True, help="Générer une nouvelle version"):
+                del st.session_state.soumission_html
+                del st.session_state.soumission_data
+                st.rerun()
+
+            # Aperçu optionnel (expandable)
+            with st.expander("👁️ Aperçu Soumission"):
+                st.markdown("**Informations extraites:**")
+                try:
+                    data = st.session_state.soumission_data
+                    st.text(f"Client: {data.get('client', {}).get('nom', 'N/A')}")
+                    st.text(f"Projet: {data.get('projet', {}).get('description', 'N/A')}")
+                    st.text(f"Superficie: {data.get('projet', {}).get('superficie_pi2', 0):,} pi²")
+                    recap = data.get('recapitulatif', {})
+                    st.text(f"Total: {recap.get('investissement_total', 0):,.2f} $")
+                except:
+                    st.text("Données non disponibles")
+
+    else:
+        st.caption("💬 Commencez une conversation pour générer une soumission")
 
 # --- Charger Police Google Font & CSS pour l'App ---
 st.markdown("""
@@ -1253,6 +1531,18 @@ if "current_conversation_id" not in st.session_state: st.session_state.current_c
 if "processed_messages" not in st.session_state: st.session_state.processed_messages = set()
 if 'single_message_download' not in st.session_state: st.session_state.single_message_download = None
 if 'show_copy_content' not in st.session_state: st.session_state.show_copy_content = None
+
+# --- Fonction pour fermer tous les modules ---
+def close_all_modules():
+    """Ferme tous les modules ouverts"""
+    st.session_state.show_entreprise_config = False
+    st.session_state.show_clients_management = False
+    st.session_state.show_soumissions_management = False
+    st.session_state.show_heritage_interface = False
+    st.session_state.show_bon_commande_interface = False
+    st.session_state.show_fournisseurs_interface = False
+    st.session_state.show_backup_interface = False
+    st.session_state.show_calendar_interface = False
 
 # --- Sidebar UI (App Principale) ---
 with st.sidebar:
@@ -1543,7 +1833,7 @@ with st.sidebar:
         4. Explorez les modules Projet et Base de Connaissances
         
         **📞 Support :**
-        - Email : support@constructoai.ca
+        - Email : info@constructoai.ca
         - Manuel complet : Cliquez le bouton ci-dessus
         """)
     
@@ -1572,6 +1862,7 @@ with st.sidebar:
                 # Style pour les boutons d'historique
                 st.markdown("""
                 <style>
+                /* Bouton titre conversation (colonne 1) */
                 div[data-testid="stHorizontalBlock"] > div:nth-child(1) button[kind="secondary"] {
                     text-align: left;
                     justify-content: flex-start !important;
@@ -1591,6 +1882,8 @@ with st.sidebar:
                     border-color: #dbeafe;
                     transform: translateX(3px);
                 }
+
+                /* Bouton renommer (colonne 2) */
                 div[data-testid="stHorizontalBlock"] > div:nth-child(2) button[kind="secondary"] {
                     background: none;
                     border: none;
@@ -1603,22 +1896,83 @@ with st.sidebar:
                     border-radius: 6px;
                 }
                 div[data-testid="stHorizontalBlock"] > div:nth-child(2) button[kind="secondary"]:hover {
+                    color: #3B82F6;
+                    background-color: rgba(59, 130, 246, 0.1);
+                    transform: scale(1.1);
+                }
+
+                /* Bouton supprimer (colonne 3) */
+                div[data-testid="stHorizontalBlock"] > div:nth-child(3) button[kind="secondary"] {
+                    background: none;
+                    border: none;
+                    color: var(--text-color-light);
+                    cursor: pointer;
+                    padding: 0.4rem 0.3rem;
+                    font-size: 0.9rem;
+                    line-height: 1;
+                    transition: all 0.2s;
+                    border-radius: 6px;
+                }
+                div[data-testid="stHorizontalBlock"] > div:nth-child(3) button[kind="secondary"]:hover {
                     color: #EF4444;
                     background-color: rgba(239, 68, 68, 0.1);
                     transform: scale(1.1);
+                }
+
+                /* Boutons confirmation/annulation en mode renommage */
+                div[data-testid="stHorizontalBlock"] > div:nth-child(2) button[kind="primary"],
+                div[data-testid="stHorizontalBlock"] > div:nth-child(3) button[kind="secondary"] {
+                    padding: 0.4rem 0.3rem;
+                    font-size: 1rem;
+                    border-radius: 6px;
                 }
                 </style>
                 """, unsafe_allow_html=True)
                 
                 with st.container(height=300):
                     for conv in conversations:
-                        col1, col2 = st.columns([0.85, 0.15])
-                        with col1:
-                            if st.button(conv['name'], key=f"load_conv_{conv['id']}", use_container_width=True, type="secondary", help=f"Charger '{conv['name']}' (màj: {conv['last_updated_at']})"):
-                                save_current_conversation(); load_selected_conversation(conv['id'])
-                        with col2:
-                            if st.button("🗑️", key=f"delete_conv_{conv['id']}", help=f"Supprimer '{conv['name']}'", use_container_width=True, type="secondary"):
-                                delete_selected_conversation(conv['id'])
+                        # Vérifier si on est en mode renommage pour cette conversation
+                        rename_key = f"rename_mode_{conv['id']}"
+                        if rename_key not in st.session_state:
+                            st.session_state[rename_key] = False
+
+                        # Si mode renommage activé pour cette conversation
+                        if st.session_state[rename_key]:
+                            col1, col2, col3 = st.columns([0.70, 0.15, 0.15])
+                            with col1:
+                                new_title = st.text_input(
+                                    "Nouveau titre",
+                                    value=conv['name'],
+                                    key=f"input_rename_{conv['id']}",
+                                    label_visibility="collapsed",
+                                    max_chars=80
+                                )
+                            with col2:
+                                if st.button("✅", key=f"confirm_rename_{conv['id']}", help="Confirmer", use_container_width=True, type="primary"):
+                                    if new_title and new_title.strip():
+                                        if st.session_state.conversation_manager.update_conversation_title(conv['id'], new_title):
+                                            st.success(f"✅ Titre modifié!")
+                                            st.session_state[rename_key] = False
+                                            st.rerun()
+                                        else:
+                                            st.error("❌ Erreur lors de la modification")
+                            with col3:
+                                if st.button("❌", key=f"cancel_rename_{conv['id']}", help="Annuler", use_container_width=True, type="secondary"):
+                                    st.session_state[rename_key] = False
+                                    st.rerun()
+                        else:
+                            # Mode normal (affichage)
+                            col1, col2, col3 = st.columns([0.70, 0.15, 0.15])
+                            with col1:
+                                if st.button(conv['name'], key=f"load_conv_{conv['id']}", use_container_width=True, type="secondary", help=f"Charger '{conv['name']}' (màj: {conv['last_updated_at']})"):
+                                    save_current_conversation(); load_selected_conversation(conv['id'])
+                            with col2:
+                                if st.button("✏️", key=f"rename_conv_{conv['id']}", help=f"Renommer '{conv['name']}'", use_container_width=True, type="secondary"):
+                                    st.session_state[rename_key] = True
+                                    st.rerun()
+                            with col3:
+                                if st.button("🗑️", key=f"delete_conv_{conv['id']}", help=f"Supprimer '{conv['name']}'", use_container_width=True, type="secondary"):
+                                    delete_selected_conversation(conv['id'])
         except Exception as e: st.error(f"Erreur historique: {e}"); st.exception(e)
     else: st.caption("Module historique inactif.")
 
@@ -1687,6 +2041,112 @@ with st.sidebar:
     else:
         st.caption("Analytics non disponibles")
 
+    # --- Configuration Entreprise ---
+    st.markdown('<hr style="margin: 1rem 0; border-top: 1px solid var(--border-color);">', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-subheader">🏢 ENTREPRISE</div>', unsafe_allow_html=True)
+
+    # Utiliser un expander pour la configuration
+    if 'show_entreprise_config' not in st.session_state:
+        st.session_state.show_entreprise_config = False
+
+    if st.button("⚙️ Configuration Entreprise", use_container_width=True, key="btn_config_entreprise"):
+        close_all_modules()
+        st.session_state.show_entreprise_config = True
+
+    # --- Gestion des Clients ---
+    st.markdown('<hr style="margin: 1rem 0; border-top: 1px solid var(--border-color);">', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-subheader">👥 CLIENTS</div>', unsafe_allow_html=True)
+
+    if 'show_clients_management' not in st.session_state:
+        st.session_state.show_clients_management = False
+
+    if st.button("📋 Gestion des Clients", use_container_width=True, key="btn_gestion_clients"):
+        close_all_modules()
+        st.session_state.show_clients_management = True
+
+    # --- Gestion Soumissions (CRM) ---
+    st.markdown('<hr style="margin: 1rem 0; border-top: 1px solid var(--border-color);">', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-subheader">📋 SOUMISSIONS</div>', unsafe_allow_html=True)
+
+    if 'show_soumissions_management' not in st.session_state:
+        st.session_state.show_soumissions_management = False
+
+    if st.button("💼 Gestion Soumissions", use_container_width=True, key="btn_gestion_soumissions"):
+        close_all_modules()
+        st.session_state.show_soumissions_management = True
+
+    # --- Métré PDF - Mesures et Quantitatif ---
+    st.markdown('<hr style="margin: 1rem 0; border-top: 1px solid var(--border-color);">', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-subheader">📐 MÉTRÉ PDF</div>', unsafe_allow_html=True)
+
+    if 'show_takeoff_interface' not in st.session_state:
+        st.session_state.show_takeoff_interface = False
+
+    if st.button("📏 Mesures & Quantitatif", use_container_width=True, key="btn_takeoff"):
+        close_all_modules()
+        st.session_state.show_takeoff_interface = True
+
+    # --- Soumissions Manuelles (C2B) ---
+    st.markdown('<hr style="margin: 1rem 0; border-top: 1px solid var(--border-color);">', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-subheader">📝 SOUMISSION MANUELLE</div>', unsafe_allow_html=True)
+
+    if 'show_heritage_interface' not in st.session_state:
+        st.session_state.show_heritage_interface = False
+
+    if st.button("➕ Créer Soumission Manuelle", use_container_width=True, key="btn_heritage"):
+        close_all_modules()
+        st.session_state.show_heritage_interface = True
+
+    # --- Bons de Commande (C2B) ---
+    st.markdown('<hr style="margin: 1rem 0; border-top: 1px solid var(--border-color);">', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-subheader">📋 BONS DE COMMANDE</div>', unsafe_allow_html=True)
+
+    if 'show_bon_commande_interface' not in st.session_state:
+        st.session_state.show_bon_commande_interface = False
+
+    if st.button("📝 Créer Bon de Commande", use_container_width=True, key="btn_bon_commande"):
+        close_all_modules()
+        st.session_state.show_bon_commande_interface = True
+
+    # --- Gestion Fournisseurs (C2B) ---
+    st.markdown('<hr style="margin: 1rem 0; border-top: 1px solid var(--border-color);">', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-subheader">🏢 FOURNISSEURS</div>', unsafe_allow_html=True)
+
+    if 'show_fournisseurs_interface' not in st.session_state:
+        st.session_state.show_fournisseurs_interface = False
+
+    if st.button("📋 Gestion Fournisseurs", use_container_width=True, key="btn_fournisseurs"):
+        close_all_modules()
+        st.session_state.show_fournisseurs_interface = True
+
+    # --- Calendrier ---
+    st.markdown('<hr style="margin: 1rem 0; border-top: 1px solid var(--border-color);">', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-subheader">📅 CALENDRIER</div>', unsafe_allow_html=True)
+
+    if 'show_calendar_interface' not in st.session_state:
+        st.session_state.show_calendar_interface = False
+
+    if st.button("📅 Calendrier & Événements", use_container_width=True, key="btn_calendar"):
+        close_all_modules()
+        st.session_state.show_calendar_interface = True
+
+    # Widget événements à venir (toujours visible)
+    try:
+        show_upcoming_events_widget()
+    except:
+        pass
+
+    # --- Sauvegardes (C2B) ---
+    st.markdown('<hr style="margin: 1rem 0; border-top: 1px solid var(--border-color);">', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-subheader">💾 SAUVEGARDES</div>', unsafe_allow_html=True)
+
+    if 'show_backup_interface' not in st.session_state:
+        st.session_state.show_backup_interface = False
+
+    if st.button("💾 Gestion Sauvegardes", use_container_width=True, key="btn_backup"):
+        close_all_modules()
+        st.session_state.show_backup_interface = True
+
 
 # --- Main Chat Area (App Principale) ---
 
@@ -1695,6 +2155,55 @@ with st.sidebar:
 
 main_container = st.container()
 with main_container:
+    # Afficher la configuration d'entreprise si demandée
+    if st.session_state.get('show_entreprise_config', False):
+        show_entreprise_config()
+        st.stop()  # Ne pas afficher le reste de l'interface
+
+    # Affichage de la gestion des clients
+    if st.session_state.get('show_clients_management', False):
+        show_clients_management()
+        st.stop()  # Ne pas afficher le reste de l'interface
+
+    # Affichage de l'historique des soumissions
+    if st.session_state.get('show_soumissions_management', False):
+        # Si on est en mode détail d'une soumission
+        if st.session_state.get('view_soumission_id'):
+            show_soumission_detail(st.session_state.view_soumission_id)
+        else:
+            show_soumissions_management()
+        st.stop()  # Ne pas afficher le reste de l'interface
+
+    # Affichage de l'interface TAKEOFF AI
+    if st.session_state.get('show_takeoff_interface', False):
+        show_takeoff_interface()
+        st.stop()
+
+    # Affichage de l'interface Soumission Manuelle
+    if st.session_state.get('show_heritage_interface', False):
+        show_soumission_heritage()
+        st.stop()
+
+    # Affichage de l'interface Bon de Commande
+    if st.session_state.get('show_bon_commande_interface', False):
+        show_bon_commande_interface()
+        st.stop()
+
+    # Affichage de l'interface Fournisseurs
+    if st.session_state.get('show_fournisseurs_interface', False):
+        show_fournisseurs_interface()
+        st.stop()
+
+    # Affichage de l'interface Sauvegardes
+    if st.session_state.get('show_backup_interface', False):
+        show_backup_interface()
+        st.stop()
+
+    # Affichage de l'interface Calendrier
+    if st.session_state.get('show_calendar_interface', False):
+        show_calendar_interface()
+        st.stop()
+
     # Titre dynamique avec style amélioré et navigation
     if 'expert_advisor' in st.session_state:
         current_profile = st.session_state.expert_advisor.get_current_profile()

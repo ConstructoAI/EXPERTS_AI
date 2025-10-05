@@ -7,27 +7,69 @@ sdk: streamlit
 sdk_version: 1.48.0
 app_file: app.py
 pinned: false
+license: apache-2.0
 ---
 
-# 🏗️ EXPERTS IA - L'Assistant IA le Plus Avancé de la Construction Québécoise
+# 🏗️ EXPERTS IA - Plateforme IA Construction Intégrée - Québec
 
-[![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-FF6B6B.svg)](https://streamlit.io/)
+[![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit%201.48-FF6B6B.svg)](https://streamlit.io/)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://python.org)
-[![Anthropic Claude](https://img.shields.io/badge/AI-Anthropic%20Claude-orange.svg)](https://anthropic.com)
-[![Experts](https://img.shields.io/badge/Profils%20Experts-60%2B-brightgreen.svg)]()
-[![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)]()
+[![Claude](https://img.shields.io/badge/AI-Claude%20Sonnet%204.5-orange.svg)](https://anthropic.com)
+[![Experts](https://img.shields.io/badge/Profils%20Experts-70%2B-brightgreen.svg)]()
+[![Code](https://img.shields.io/badge/Lignes%20Code-12K%2B-purple.svg)]()
+[![Status](https://img.shields.io/badge/Status-Production-success.svg)]()
 
-> **🚀 RÉVOLUTION IA CONSTRUCTION : La première plateforme avec 60+ experts IA spécialisés**
+> **🚀 PLATEFORME IA INTÉGRÉE : 70+ Experts • Soumissions IA • Takeoff AI • Gestion Complète**
 
-**EXPERTS IA** combine l'intelligence artificielle d'Anthropic Claude avec **la plus grande base de connaissances construction du Québec** : **60+ profils d'experts spécialisés** couvrant **TOUS** les corps de métier et aspects du secteur.
+**EXPERTS IA** combine l'intelligence artificielle **Claude Sonnet 4.5** avec **la plus grande base de connaissances construction du Québec** : **70+ profils d'experts spécialisés**, génération de soumissions professionnelles, mesures de plans PDF, gestion clients/fournisseurs, calendrier intelligent et bien plus.
 
 ---
 
-## ⭐ INNOVATION MAJEURE : 60+ Experts IA Spécialisés
+## ⭐ FONCTIONNALITÉS PRINCIPALES
 
-### 🧠 **Base de Connaissances Unique au Monde**
+### 🎯 **Plateforme Tout-en-Un Construction**
 
-**2,400+ années d'expérience cumulative** dans une seule plateforme IA :
+Une suite complète d'outils professionnels propulsés par l'IA :
+
+#### **💬 Conseiller IA Multi-Expert**
+- **70+ profils d'experts spécialisés** (Entrepreneur Général, Architecte, Électricien, Plombier, etc.)
+- **27 formats de documents** supportés (PDF, DOCX, images, plans, audio, etc.)
+- **Recherche web intégrée** avec contexte métier construction
+- **Analyse intelligente** de plans, devis, spécifications techniques
+
+#### **📋 Générateur de Soumissions IA**
+- **Création automatique** depuis conversations avec experts
+- **Templates HTML professionnels** avec CSS intégré
+- **Calculs automatiques** : Administration (3%), Contingences (12%), Profit (15%)
+- **Signature électronique** avec canvas interactif
+- **10 catégories travaux** pré-configurées
+- **Liens publics sécurisés** pour signature client
+
+#### **📐 TAKEOFF AI - Mesure de Plans**
+- **Upload et visualisation PDF** multi-pages
+- **Mesures manuelles** : distance, surface, périmètre, angle
+- **Catalogue produits** personnalisable avec prix
+- **Export CSV/JSON** vers soumissions
+- **Phase 2 (optionnel)** : Canvas interactif, dessin direct, calibration visuelle
+
+#### **🏢 Gestion Entreprise**
+- **Configuration entreprise** : Logo, couleurs, coordonnées, taux
+- **Base clients** complète avec historique
+- **Gestion fournisseurs** avec historique de prix
+- **Bons de commande** générés automatiquement
+- **Numérotation intelligente** unifiée multi-modules
+
+#### **📅 Calendrier Intelligent**
+- **Événements multi-types** : soumissions, livraisons, suivis
+- **Rappels automatiques** (suivi soumission J+7)
+- **Intégration complète** avec tous les modules
+- **Vue chronologique** avec codes couleur
+
+---
+
+## 🧠 BASE DE CONNAISSANCES - 70+ EXPERTS IA
+
+### **2,800+ années d'expérience cumulative** dans une seule plateforme IA :
 
 #### 🏗️ **EXPERTS PRINCIPAUX**
 - **👷 Entrepreneur Général** (40 ans) - Gestion projets, estimations précises
@@ -101,21 +143,56 @@ pinned: false
 
 ## 🏗️ Architecture Technique
 
-### 📁 **Structure Révolutionnaire (6,000+ lignes)**
+### 📁 **Structure Complète (12,000+ lignes)**
 
 ```
-EXPERTS IA/
-├── 🎯 app.py                    # Interface principale (1,089 lignes)
-├── 🧠 expert_logic.py           # Logique IA + 60 profils (659 lignes)
-├── 💬 conversation_manager.py   # Persistance conversations (183 lignes)
-├── 🏗️ project_manager.py       # Backend projets (669 lignes)
-├── 🎨 project_ui.py             # Interface projets (1,089 lignes)
-├── 🎨 style.css                # Design system (1,089 lignes)
-├── 📋 requirements.txt          # Dépendances optimisées
-├── ⚙️ config.toml              # Configuration Streamlit
-├── 📚 README.md               # Documentation complète
+EXPERTS_AI-main/
+├── 🎯 app.py                         # Application principale Streamlit (1,000+ lignes)
+├── 🧠 expert_logic.py                # Moteur IA + 70 profils (695 lignes)
+├── 💬 conversation_manager.py        # Historique conversations (191 lignes)
 │
-└── 👥 profiles/                # BASE DE CONNAISSANCES UNIQUE
+├── 📋 MODULES SOUMISSIONS
+│   ├── soumission_generator.py      # Génération IA (450+ lignes)
+│   ├── soumissions_db.py             # Base de données (469 lignes)
+│   ├── soumissions_ui.py             # Interface gestion (339 lignes)
+│   ├── soumission_publique.py        # Vue client signature (576 lignes)
+│   └── soumission_heritage.py        # Templates héritage
+│
+├── 📐 TAKEOFF MODULE (Phase 1/2)
+│   ├── __init__.py                   # Détection phase intelligente
+│   ├── takeoff_interface.py          # Interface principale
+│   ├── takeoff_interface_v2.py       # Version canvas interactif
+│   ├── measurement_tools.py          # Outils de mesure
+│   ├── product_catalog.py            # Catalogue produits
+│   ├── interactive_pdf_viewer.py     # Visualisation avancée
+│   ├── snap_system.py                # Système accrochage
+│   ├── integration_bridge.py         # Export soumissions
+│   └── expert_advisor.py             # Conseils IA contextuels
+│
+├── 🏢 GESTION ENTREPRISE
+│   ├── entreprise_config.py          # Configuration (200+ lignes)
+│   ├── client_config.py              # Gestion clients (200+ lignes)
+│   ├── fournisseurs_manager.py       # Fournisseurs (526 lignes)
+│   ├── bon_commande_simple.py        # Bons commande (1,473 lignes)
+│   ├── numero_manager.py             # Numérotation unifiée (315 lignes)
+│   ├── calendar_manager.py           # Calendrier événements (572 lignes)
+│   └── backup_manager.py             # Sauvegarde/restauration (232 lignes)
+│
+├── 🎨 style.css                      # Design system complet (200+ lignes)
+├── 📋 requirements.txt               # Dépendances (76 lignes)
+├── ⚙️ .streamlit/config.toml        # Configuration Streamlit
+├── 🪟 Run.bat                        # Script Windows
+├── 📚 README.md                      # Documentation
+│
+├── 🗄️ BASES DE DONNÉES SQLite
+│   ├── conversations.db              # Historique conversations
+│   ├── soumissions.db                # Soumissions clients (27 colonnes)
+│   ├── clients.db                    # Base clients
+│   ├── entreprise_config.db          # Config entreprise (JSON)
+│   ├── fournisseurs.db               # Fournisseurs + historique prix
+│   └── calendrier.db                 # Événements calendrier
+│
+└── 👥 profiles/                      # BASE DE CONNAISSANCES 70+ EXPERTS
     ├── 🏗️ ENTREPRENEUR_GENERAL.txt
     ├── 🚪 PORTES_FENETRES_profil.txt
     ├── ⚡ ELECTRICIEN.txt
@@ -173,38 +250,79 @@ EXPERTS IA/
 
 ---
 
-## 💰 Valeur Business Révolutionnaire
+## 💰 Stack Technologique & Données
 
-### 🚀 **Différenciation Concurrentielle Unique**
+### ⚙️ **Technologies Utilisées**
 
-#### **❌ Concurrence Traditionnelle**
-- Applications séparées par métier
-- Expertise limitée (1-3 spécialités)
-- Base de connaissances générique
-- Mise à jour manuelle lente
-
-#### **✅ EXPERTS IA - RÉVOLUTION**
-- **60+ experts** dans une seule plateforme
-- **2,400+ années** d'expérience cumulative
-- **Expertise québécoise** ultra-spécialisée
-- **IA adaptative** qui sélectionne l'expert optimal
-- **Impossible à reproduire** rapidement
-
-### 📊 **Nouvelle Valorisation Marché**
-
-#### **Impact Exponential de la Base de Connaissances**
+#### **Backend & IA**
+```python
+Framework Web: Streamlit 1.48.0+
+Modèle IA: Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
+API: Anthropic API (max_tokens: 16000)
+Base de données: SQLite 3.x (5+ bases)
+Langage: Python 3.9+
 ```
-Valorisation Traditionnelle App Construction: 2-5M$
 
-NOUVELLE VALORISATION EXPERTS IA:
-├── Base connaissances 60+ experts: 15-20M$
-├── Propriété intellectuelle unique: 8-12M$
-├── Barrière entrée insurmontable: 5-8M$
-├── Technologie IA avancée: 3-5M$
-└── Position dominante marché: 5-10M$
-
-ESTIMATION TOTALE: 36-55M$ CAD
+#### **Frontend & UI**
+```css
+CSS: Design system personnalisé (~200 lignes)
+Responsive: Mobile/Desktop adaptatif
+JavaScript: Canvas signature, détection mobile
+Animations: CSS3 (fadeIn, slideIn, pulse)
+Icons: Emoji Unicode
 ```
+
+#### **Modules Python Clés**
+```python
+# IA & Documents
+anthropic>=0.51.0          # API Claude
+PyPDF2>=3.0.0              # Lecture PDF
+python-docx>=1.0.0         # Word
+openpyxl>=3.1.0            # Excel
+Pillow>=10.0.0             # Images
+speechrecognition>=3.10.0  # Audio
+
+# PDF Avancé (Takeoff)
+pymupdf>=1.24.0            # Rendu PDF
+numpy>=1.24.0              # Calculs
+
+# Optionnel Phase 2
+streamlit-drawable-canvas>=0.9.0  # Canvas interactif
+opencv-python>=4.8.0               # Vision
+```
+
+### 📊 **Architecture Données**
+
+#### **Bases SQLite (5 fichiers)**
+```sql
+conversations.db       -- Historique conversations (JSON)
+soumissions.db         -- 27 colonnes (signatures, tokens, HTML)
+clients.db             -- Base clients + contacts
+entreprise_config.db   -- Config JSON entreprise
+fournisseurs.db        -- Fournisseurs + historique_prix
+calendrier.db          -- Événements multi-types
+```
+
+#### **Caractéristiques**
+- **Volume estimé** : 100-500 MB pour 1000 projets
+- **Performance** : Index sur colonnes fréquentes
+- **Backup** : Export ZIP automatique
+- **Migration** : Scripts ALTER TABLE avec try/except
+
+### 🔒 **Sécurité & Conformité**
+
+#### **Implémenté**
+✅ Tokens UUID v4 pour liens publics
+✅ Isolation session Streamlit par utilisateur
+✅ Validation basique inputs
+✅ Clé API en variable environnement
+
+#### **Recommandé pour Production**
+⚠️ Ajouter authentification (Streamlit-Authenticator)
+⚠️ Rate limiting API Claude
+⚠️ Validation stricte uploads (magic bytes)
+⚠️ Chiffrement backups
+⚠️ Logging structuré (JSON)
 
 ### 🎯 **Marché Cible Québécois Dominé**
 
@@ -299,31 +417,81 @@ autorise unifamiliale. Exigences spécifiques..."
 
 ### 🚀 **Déploiement Hugging Face Spaces** *(Recommandé)*
 
+#### **Configuration Secrets**
 ```bash
-# Configuration secrets optimisée
-ANTHROPIC_API_KEY = "sk-ant-api03-VOTRE_CLE"
-APP_PASSWORD = "mot_de_passe_securise"
-
-# Déploiement automatique avec 60+ profils experts
-# Temps de build: ~3-5 minutes
-# Taille finale: ~15MB (optimisée)
+ANTHROPIC_API_KEY = "sk-ant-api03-VOTRE_CLE_ICI"
 ```
 
-### 💻 **Installation Locale Développement**
-
+#### **Variables Environnement (Optionnel)**
 ```bash
-# 1. Cloner avec base connaissances complète
-git clone https://huggingface.co/spaces/votre-user/constructo-ai
-cd constructo-ai
+APP_URL = "https://votre-space.hf.space"  # Détection automatique si absent
+DATA_DIR = "data"                          # Répertoire bases de données
+```
 
-# 2. Vérifier profils experts (60+ fichiers)
-ls profiles/ | wc -l  # Doit retourner 60+
+#### **Spécifications**
+- **Temps de build** : ~3-5 minutes
+- **Taille finale** : ~25MB (avec 70+ profils)
+- **Dépendances** : Toutes dans requirements.txt
+- **Runtime** : Python 3.9+
 
-# 3. Installation dépendances
+### 💻 **Installation Locale Windows**
+
+#### **Méthode 1 : Script automatique**
+```bash
+# Double-cliquer sur Run.bat
+# Ou depuis PowerShell/CMD
+Run.bat
+```
+
+#### **Méthode 2 : Installation manuelle**
+```bash
+# 1. Cloner le dépôt
+git clone https://huggingface.co/spaces/VOTRE-USER/EXPERTS_AI
+cd EXPERTS_AI
+
+# 2. Créer environnement virtuel
+python -m venv venv
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # Linux/Mac
+
+# 3. Installer dépendances
 pip install -r requirements.txt
 
-# 4. Lancement avec tous les experts
+# 4. Configurer .env
+echo ANTHROPIC_API_KEY=sk-ant-api03-VOTRE_CLE > .env
+
+# 5. Vérifier profils (doit retourner 70+)
+dir profiles\*.txt /B | find /C ".txt"
+
+# 6. Lancer l'application
 streamlit run app.py
+```
+
+#### **Accès local**
+```
+🌐 http://localhost:8501
+```
+
+### 🐳 **Déploiement Docker** *(Production)*
+
+```dockerfile
+# Dockerfile (à créer)
+FROM python:3.9-slim
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+EXPOSE 8501
+
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+```
+
+```bash
+# Build et run
+docker build -t experts-ia .
+docker run -p 8501:8501 -e ANTHROPIC_API_KEY=sk-ant-xxx experts-ia
 ```
 
 ---
@@ -365,25 +533,44 @@ streamlit run app.py
 
 ---
 
-## 🚀 Roadmap Stratégique Accélérée
+## 🛣️ Roadmap Développement
 
-### ⚡ **Phase 1 - Domination Québec** *(6 mois)*
-- **🎯 Objectif**: 1,000 utilisateurs actifs
-- **🏗️ Focus**: Entrepreneurs généraux + architectes
-- **💰 Revenus**: 300K$/mois récurrents
-- **🤝 Partenariats**: APCHQ, OAQ, CMEQ
+### ✅ **Version 1.0 - Actuelle** (Production)
+- ✅ 70+ profils experts spécialisés
+- ✅ Conseiller IA multi-expert avec Claude Sonnet 4.5
+- ✅ Génération soumissions HTML professionnelles
+- ✅ Signature électronique clients
+- ✅ TAKEOFF AI Phase 1 (mesures manuelles)
+- ✅ Gestion clients/fournisseurs/calendrier
+- ✅ Bons de commande automatiques
+- ✅ Backup/restauration
 
-### 🌟 **Phase 2 - Expansion Canada** *(12 mois)*
-- **🎯 Objectif**: 5,000 utilisateurs, Ontario/BC
-- **🏗️ Adaptation**: Codes provinciaux spécifiques
-- **💰 Revenus**: 1.5M$/mois récurrents
-- **🏢 Enterprise**: 50+ grandes entreprises
+### 🔄 **Version 1.5 - En Cours** (2-3 mois)
+- 🔄 TAKEOFF AI Phase 2 (canvas interactif)
+- 🔄 Authentification multi-utilisateurs
+- 🔄 API REST pour intégrations
+- 🔄 Export avancé (Excel, comptabilité)
+- 🔄 Recherche full-text conversations
+- 🔄 Templates soumissions personnalisables
+- 🔄 Rapports analytics détaillés
 
-### 🌍 **Phase 3 - International** *(18 mois)*
-- **🎯 Objectif**: 25,000 utilisateurs
-- **🌍 Marchés**: France, Belgique, Suisse francophone
-- **💰 Revenus**: 5M$/mois récurrents
-- **🚀 Valorisation**: 100M$+ pré-acquisition
+### 🔮 **Version 2.0 - Planifiée** (6-9 mois)
+- 📋 Migration PostgreSQL (scalabilité)
+- 📋 Cache Redis (performance)
+- 📋 Multi-tenancy entreprises
+- 📋 Rôles & permissions avancés
+- 📋 Intégrations ERP (Sage, QuickBooks)
+- 📋 Mobile app (React Native)
+- 📋 ML prédictif (estimations auto)
+- 📋 Blockchain certifications
+
+### 🚀 **Vision 3.0 - Future** (12+ mois)
+- 🌟 Vision IA analyse photos chantier
+- 🌟 Réalité augmentée (AR plans)
+- 🌟 Assistant vocal Alexa/Google
+- 🌟 Marketplace intégrations
+- 🌟 Certification professionnelle
+- 🌟 Expansion internationale
 
 ---
 
@@ -471,134 +658,161 @@ RESEARCH_PIPELINE = {
 
 ---
 
-## 📞 Contact et Opportunités
+## 📞 Contact et Support
 
-### 🚀 **Levée de Fonds Série A**
-**Objectif**: 5M$ CAD pour expansion Canada
+### 👨‍💻 **Développement & Maintenance**
 
-#### **Utilisation Fonds**
-```
-💰 ALLOCATION BUDGÉTAIRE 5M$:
-├── Développement plateforme: 1.5M$ (30%)
-├── Expansion équipe IA: 1.0M$ (20%)  
-├── Marketing/Acquisition: 1.0M$ (20%)
-├── Partenariats stratégiques: 0.8M$ (16%)
-├── Infrastructure/scaling: 0.5M$ (10%)
-└── Fonds roulement: 0.2M$ (4%)
-```
+#### **Constructo AI Inc.**
+- **🌐 Site web**: [constructoai.ca](https://constructoai.ca)
+- **📧 Email**: info@constructoai.ca
+- **📍 Localisation**: Québec, Canada
 
-#### **ROI Projeté Investisseurs**
-- **Année 1**: 1.5M$ revenus récurrents
-- **Année 3**: 15M$ revenus récurrents  
-- **Année 5**: 50M$ revenus + acquisition 100M$+
-- **ROI 5 ans**: **20x+** retour investissement
+#### **Équipe Technique**
+- **Architecture logicielle**: 12,000+ lignes code
+- **Base connaissances**: 70+ profils experts validés
+- **Intégration Claude**: API Sonnet 4.5 avancée
+- **Modules spécialisés**: Soumissions, Takeoff AI, Gestion
 
-### 👨‍💻 **Équipe Fondatrice**
+### 🤝 **Opportunités Collaboration**
 
-#### **🏗️ Sylvain Leduc - CEO & Fondateur**
-- **📧 Contact**: info@constructoai.ca
-- **💼 Expertise**: 20+ ans construction + 5 ans IA
-- **🎓 Formation**: Continue Anthropic/OpenAI
-- **🏆 Reconnaissance**: Innovation TechnoMontréal 2024
-
-#### **🤖 Équipe IA Développement**
-- **Architecture logicielle**: 4,000+ lignes optimisées
-- **Base connaissances**: 60+ profils experts validés
-- **Intégration Claude**: API avancée et outils
-- **Support technique**: 24/7 disponible
-
-### 🎯 **Opportunités Immédiates**
-
-#### **💰 Investisseurs Série A**
-- **Pitch deck** complet disponible
-- **Due diligence** documentation prête
-- **Démonstration live** sur demande
-- **Projections financières** validées
-
-#### **🤝 Partenaires Stratégiques**
-- **Intégrations ERP** (Sage, QuickBooks)
-- **APIs construction** (PlanGrid, Procore)
+#### **🔌 Intégrations Partenaires**
+Nous recherchons partenariats pour intégrations:
+- **ERP Construction** (Sage, QuickBooks, Procore)
 - **Fournisseurs matériaux** (catalogues automatisés)
-- **Institutions formation** (certification programmes)
+- **Logiciels plans** (AutoCAD, Revit, ArchiCAD)
+- **Institutions formation** (programmes certification)
 
-#### **🏢 Clients Enterprise**
-- **Démo personnalisée** sur vos projets
-- **Pilot programme** 90 jours gratuit
-- **Formation équipes** incluse
-- **Support dédié** 24/7
+#### **💼 Licence Entreprise**
+Solution white-label disponible pour:
+- Grandes entreprises construction
+- Associations professionnelles
+- Institutions académiques
+- Gouvernements & organismes publics
+
+### 📚 **Documentation & Support**
+
+#### **Ressources Disponibles**
+- 📖 **Documentation technique** : Ce README
+- 🎥 **Vidéos démo** : À venir sur YouTube
+- 💬 **Forum communautaire** : Discussions GitHub
+- 🐛 **Report bugs** : Issues GitHub
+
+#### **Support Technique**
+- **Email support**: support@constructoai.ca
+- **Temps réponse**: 24-48h jours ouvrables
+- **Documentation IA**: Prompts et configurations partagés
+- **Mises à jour**: Profils experts actualisés régulièrement
+
+### 🎯 **Contribuer au Projet**
+
+#### **Open Source Contributions**
+```bash
+# 1. Fork le projet
+# 2. Créer branche feature
+git checkout -b feature/NouvelleFonctionnalite
+
+# 3. Commit changements
+git commit -m "Ajout: Nouvelle fonctionnalité"
+
+# 4. Push vers branche
+git push origin feature/NouvelleFonctionnalite
+
+# 5. Ouvrir Pull Request
+```
+
+#### **Domaines Contribution**
+- 🧠 **Nouveaux profils experts** (autres provinces, spécialités)
+- 🔧 **Améliorations techniques** (performance, sécurité)
+- 🌍 **Traductions** (anglais, autres langues)
+- 📊 **Nouvelles fonctionnalités** (modules additionnels)
+- 🐛 **Corrections bugs** (tests, validations)
 
 ---
 
-## 🏆 Conclusion Exécutive
+## 🏆 Résumé Exécutif
 
-### 🚀 **Révolution Industrielle Construction**
+### 🎯 **EXPERTS IA en Bref**
 
-**EXPERTS IA** n'est pas simplement une application - c'est **la première révolution IA du secteur construction québécois** avec :
+**EXPERTS IA** est une plateforme IA complète pour l'industrie de la construction au Québec, intégrant :
 
-#### **Innovation Technique Sans Précédent** ⭐⭐⭐⭐⭐
-- **60+ experts IA** vs 1-3 concurrents maximum
-- **2,400+ années expérience** cumulative unique
-- **Architecture logicielle** professionnelle 6,000+ lignes
-- **Impossible à reproduire** en moins de 5-10 ans
+#### **✨ Points Forts Clés**
+- ✅ **70+ profils experts spécialisés** couvrant tous les corps de métier
+- ✅ **Architecture complète 12,000+ lignes** de code Python professionnel
+- ✅ **Claude Sonnet 4.5** - Le meilleur modèle IA Anthropic
+- ✅ **5 modules intégrés** : Experts IA, Soumissions, Takeoff AI, Gestion, Calendrier
+- ✅ **27 formats documents** supportés nativement
+- ✅ **Déploiement flexible** : Hugging Face, local Windows, Docker
 
-#### **Différenciation Concurrentielle Absolue** ⭐⭐⭐⭐⭐
-- **Position dominante** marché québécois
-- **Barrières entrée** insurmontables
-- **Propriété intellectuelle** protégée
-- **Effet réseau** exponentiel croissant
+#### **🎨 Expérience Utilisateur**
+- Interface Streamlit intuitive et responsive
+- Design system CSS professionnel avec animations
+- Génération HTML/PDF soumissions de qualité
+- Signature électronique client avec canvas
+- Gestion complète clients/fournisseurs/calendrier
 
-#### **Potentiel Commercial Exceptionnel** ⭐⭐⭐⭐⭐
-- **75,000+ professionnels** marché cible
-- **36-55M$ CAD** valorisation estimée
-- **20x+ ROI** potentiel investisseurs
-- **Acquisition 100M$+** horizon 5 ans
+#### **🔧 Qualité Technique**
+- Code modulaire bien structuré (21+ fichiers Python)
+- SQLite multi-bases optimisées (5 bases)
+- Gestion erreurs robuste avec try/except
+- Session state Streamlit pour isolation utilisateurs
+- Logs détaillés pour debugging
 
-#### **Impact Sociétal Transformateur** ⭐⭐⭐⭐⭐
-- **Digitalisation complète** secteur construction
-- **Formation nouvelle génération** professionnels IA
-- **Standard industrie** facto établi
-- **Export international** expertise québécoise
+#### **📈 Cas d'Usage**
+1. **Entrepreneurs généraux** : Estimations précises avec experts métier
+2. **Architectes** : Conseils techniques multi-spécialités
+3. **Sous-traitants** : Catalogues prix à jour, soumissions rapides
+4. **Estimateurs** : Mesures plans PDF (Takeoff AI)
+5. **Gestionnaires** : Suivi complet projets et calendrier
 
-### 🎯 **Appel à l'Action**
+### 🚀 **Prochaines Étapes**
 
-**🚀 Rejoignez la Révolution IA Construction !**
+#### **Essayer Maintenant**
+1. **Démo en ligne** : [Hugging Face Space](#)
+2. **Installation locale** : Suivre guide Windows ci-dessus
+3. **Docker** : `docker run -p 8501:8501 experts-ia`
 
-#### **Pour Investisseurs**
-📧 **business@constructoai.ca**
-- Pitch deck Série A complet
-- Projections financières validées  
-- Due diligence documentation
+#### **Contribuer**
+- 🐛 Reporter bugs via GitHub Issues
+- 💡 Suggérer fonctionnalités via Discussions
+- 🧠 Ajouter profils experts (Pull Requests)
+- 📚 Améliorer documentation
 
-#### **Pour Partenaires Stratégiques**
-📧 **partenariats@constructoai.ca**
-- Intégrations techniques
-- Programmes de formation
-- Développement conjoint
-
-#### **Pour Professionnels Construction**  
-📧 **info@constructoai.ca**
-- Démo personnalisée gratuite
-- Évaluation ROI votre organisation
-- Formation équipes incluse
+#### **Contact Professionnel**
+- **📧 Info générale** : info@constructoai.ca
+- **🔧 Support technique** : support@constructoai.ca
+- **🤝 Partenariats** : Licences entreprises disponibles
 
 ---
 
 <div align="center">
 
+---
+
 ### 🏗️ **EXPERTS IA**
-*La Plus Grande Révolution IA de la Construction Québécoise*
+*Plateforme IA Complète pour la Construction au Québec*
 
-**60+ Experts • 2,400+ Années d'Expérience • 1 Seule Plateforme**
+**70+ Experts • 12,000+ Lignes Code • Claude Sonnet 4.5**
 
-[![Démo Live](https://img.shields.io/badge/🚀-Essayer%20Maintenant-blue?style=for-the-badge)](https://huggingface.co/spaces/votre-space)
-[![Investir](https://img.shields.io/badge/💰-Opportunité%20Investissement-green?style=for-the-badge)](mailto:business@constructoai.ca)
-[![Partenaire](https://img.shields.io/badge/🤝-Devenir%20Partenaire-orange?style=for-the-badge)](mailto:partenariats@constructoai.ca)
+[![Démo Live](https://img.shields.io/badge/🚀-Essayer%20sur%20HF%20Spaces-blue?style=for-the-badge)](https://huggingface.co/spaces/)
+[![Documentation](https://img.shields.io/badge/📚-Documentation-green?style=for-the-badge)](#)
+[![Contribuer](https://img.shields.io/badge/🤝-Contribuer-orange?style=for-the-badge)](https://github.com/)
 
 ---
 
-**🏆 Développé avec Excellence au Québec**  
-*Par des Experts Passionnés de Construction et d'Innovation IA*
+**🎯 Fonctionnalités Principales**
 
-**© 2025 EXPERTS IA - Tous Droits Réservés**
+✨ Conseiller IA Multi-Expert | 📋 Soumissions Professionnelles | 📐 TAKEOFF AI
+🏢 Gestion Complète | 📅 Calendrier Intelligent | 🔐 Signature Électronique
+
+---
+
+**🏆 Développé au Québec avec ❤️**
+*Propulsé par Claude Sonnet 4.5 d'Anthropic*
+
+**© 2025 Constructo AI Inc. - Tous Droits Réservés**
+
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-yellow.svg)](https://python.org)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.48-red.svg)](https://streamlit.io)
 
 </div>

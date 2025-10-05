@@ -171,6 +171,39 @@ class ConversationManager:
             print(f"Erreur SQLite lors de la récupération de la liste des conversations: {e}")
             return []
 
+    def update_conversation_title(self, conversation_id, new_title):
+        """Met à jour le titre d'une conversation existante."""
+        if conversation_id is None or not new_title:
+            return False
+
+        # Nettoyer le titre (éviter les titres trop longs ou vides)
+        new_title = new_title.strip()
+        if not new_title:
+            return False
+
+        # Limiter la longueur du titre
+        new_title = new_title[:80]
+
+        try:
+            with self._connect() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE conversations
+                    SET name = ?, last_updated_at = ?
+                    WHERE id = ?
+                """, (new_title, datetime.now().isoformat(), conversation_id))
+
+                updated_count = cursor.rowcount
+                if updated_count > 0:
+                    print(f"Titre de la conversation {conversation_id} mis à jour: '{new_title}'")
+                    return True
+                else:
+                    print(f"Aucune conversation trouvée avec l'ID {conversation_id} pour mise à jour du titre.")
+                    return False
+        except sqlite3.Error as e:
+            print(f"Erreur SQLite lors de la mise à jour du titre de la conversation {conversation_id}: {e}")
+            return False
+
     def delete_conversation(self, conversation_id):
         """Supprime une conversation par son ID."""
         if conversation_id is None:

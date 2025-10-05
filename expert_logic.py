@@ -104,7 +104,7 @@ class ExpertAdvisor:
             raise ValueError("Clé API Anthropic manquante.")
         self.anthropic = Anthropic(api_key=api_key)
         print("Client API Anthropic initialisé.")
-        self.model_name_global = "claude-opus-4-1-20250805" # Votre modèle unique
+        self.model_name_global = "claude-sonnet-4-5-20250929" # Votre modèle unique
         print(f"Utilisation globale du modèle : {self.model_name_global}")
 
         # Support étendu des formats - 27 types de fichiers
@@ -466,7 +466,7 @@ class ExpertAdvisor:
         try:
             print(f"Appel API Claude pour analyse de {num_valid_files} fichier(s)... Modèle: {self.model_name_global}")
             response = self.anthropic.messages.create(
-                model=self.model_name_global, max_tokens=4000,
+                model=self.model_name_global, max_tokens=8000,
                 messages=api_messages, system=api_system_prompt
             )
             if response.content and len(response.content) > 0 and response.content[0].text:
@@ -568,7 +568,7 @@ class ExpertAdvisor:
             print(f"Appel API Claude pour réponse conversationnelle... Modèle: {self.model_name_global}")
             response = self.anthropic.messages.create(
                 model=self.model_name_global, 
-                max_tokens=4000,
+                max_tokens=8000,
                 messages=api_messages_history, 
                 system=api_system_prompt
             )
@@ -607,12 +607,11 @@ class ExpertAdvisor:
             }]
             
             print(f"[WEB] Envoi de la requête à Claude avec recherche web activée...")
-            
-            # Utiliser claude-opus-4-1-20250805 comme dans le script qui fonctionne
-            # OU garder votre modèle actuel si vous préférez
+
+            # Utiliser claude-sonnet-4-5-20250929 pour les recherches web
             response = self.anthropic.messages.create(
-                model="claude-opus-4-1-20250805",  # Modèle du script qui fonctionne
-                max_tokens=4000,
+                model="claude-sonnet-4-5-20250929",
+                max_tokens=8000,
                 temperature=0.1,  # Plus bas pour des résultats factuels
                 messages=[{
                     "role": "user", 
